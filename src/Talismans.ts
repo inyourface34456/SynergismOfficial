@@ -7,7 +7,21 @@ import { PCoinUpgradeEffects } from './PseudoCoinUpgrades'
 import { format, player } from './Synergism'
 import { Globals as G } from './Variables'
 
-const talismanResourceCosts = {
+interface TalismanFragmentCost {
+  obtainium: number
+  offerings: number
+}
+
+export type TalismanCraftItems =
+  | 'shard'
+  | 'commonFragment'
+  | 'uncommonFragment'
+  | 'rareFragment'
+  | 'epicFragment'
+  | 'legendaryFragment'
+  | 'mythicalFragment'
+
+const talismanResourceCosts: Record<TalismanCraftItems, TalismanFragmentCost> = {
   shard: {
     obtainium: 1e13,
     offerings: 1e2
@@ -35,6 +49,284 @@ const talismanResourceCosts = {
   mythicalFragment: {
     obtainium: 1e24,
     offerings: 1e9
+  }
+}
+
+interface BaseReward {
+  desc: string
+  runeBonus: number
+}
+
+interface ExemptionReward extends BaseReward {
+  taxReduction: number
+}
+
+interface ChronosReward extends BaseReward {
+  globalSpeed: number
+}
+
+interface MidasReward extends BaseReward {
+  blessingBonus: number
+}
+
+interface MetaphysicsReward extends BaseReward {
+  talismanEffect: number
+}
+
+interface PolymathReward extends BaseReward {
+  spiritBonus: number
+}
+
+interface MortuusReward extends BaseReward {
+  antBonus: number
+}
+
+interface PlasticReward extends BaseReward {
+  quarkBonus: number
+}
+
+type TalismanTypeMap = {
+  exemption: ExemptionReward
+  chronos: ChronosReward
+  midas: MidasReward
+  metaphysics: MetaphysicsReward
+  polymath: PolymathReward
+  mortuus: MortuusReward
+  plastic: PlasticReward
+}
+
+export type TalismanKeys = keyof TalismanTypeMap
+
+export const noTalismanFragments: Record<TalismanCraftItems, number> = {
+  shard: 0,
+  commonFragment: 0,
+  uncommonFragment: 0,
+  rareFragment: 0,
+  epicFragment: 0,
+  legendaryFragment: 0,
+  mythicalFragment: 0
+}
+
+interface TalismanData<K extends TalismanKeys> {
+  // Fields supplied by data object
+  baseMult: number
+  maxLevel: number
+  costs: (this: void, baseMult: number, level: number) => Record<TalismanCraftItems, number>
+  levelCapIncrease: () => number
+  rewards(this: void, n: number): TalismanTypeMap[K]
+
+  // Field that is stored in the player
+  fragmentsInvested?: Record<TalismanCraftItems, number>
+}
+
+export class Talisman<K extends TalismanKeys> {
+  readonly name: string
+  readonly description: string
+
+  readonly costs: (this: void, baseMult: number, level: number) => Record<TalismanCraftItems, number>
+  readonly levelCapIncrease: () => number
+  readonly baseMult: number
+  readonly maxLevel: number
+  readonly rewards: (n: number) => TalismanTypeMap[K]
+  public _level = 0
+  #key: K
+
+  public fragmentsInvested = noTalismanFragments
+
+  constructor (data: TalismanData<K>, key: K, prevLevel?: number) {
+    this.name = i18next.t(`runes.talismans.${key}.name`)
+    this.description = i18next.t(`runes.talismans.${key}.name`)
+    this.#key = key
+
+    this.costs = data.costs
+    this.levelCapIncrease = data.levelCapIncrease
+    this.baseMult = data.baseMult
+    this.maxLevel = data.maxLevel
+    this.rewards = data.rewards
+
+    this.fragmentsInvested = data.fragmentsInvested ?? noTalismanFragments
+    this.updateLevelAndSpentFromInvested()
+
+    if (prevLevel !== undefined) {
+      this.updateResourcePredefinedLevel(prevLevel)
+    }
+  }
+
+  get costTNL () {
+    return this.costs(this.baseMult, this.level)
+  }
+
+  get effectiveLevelCap () {
+    return this.maxLevel + this.levelCapIncrease()
+  }
+
+  set level (level: number) {
+    this._level = Math.min(level, this.effectiveLevelCap)
+  }
+
+  get level () {
+    return this._level
+  }
+
+  // From 1 to 7 with linear scaling, unaffected by level cap increasers
+  get rarity () {
+    return 1 + Math.floor(6 * Math.min(1, this.level / this.maxLevel))
+  }
+
+  get levelsUntilRarityIncrease () {
+    if (this.level >= this.maxLevel) {
+      return 0
+    } else {
+      const currentRarity = this.rarity
+      const levelReq = Math.ceil(this.maxLevel * currentRarity / 6)
+      return levelReq - this.level
+    }
+  }
+
+  affordableNextLevel (budget: Record<TalismanCraftItems, number>): boolean {
+    const costs = this.costs(this.baseMult, this.level)
+
+    for (const item in costs) {
+      if (costs[item as TalismanCraftItems] > budget[item as TalismanCraftItems]) {
+        return false
+      }
+    }
+    return true
+  }
+
+  updateLevelAndSpentFromInvested (): void {
+    let level = 0
+    const budget = this.fragmentsInvested
+
+    let nextCost = this.costs(this.baseMult, level)
+
+    let canAffordNextLevel = this.affordableNextLevel(budget)
+    while (canAffordNextLevel) {
+      for (const item in nextCost) {
+        budget[item as TalismanCraftItems] -= nextCost[item as TalismanCraftItems]
+      }
+      level += 1
+      nextCost = this.costs(this.baseMult, level)
+
+      if (level >= this.effectiveLevelCap) {
+        break
+      }
+
+      canAffordNextLevel = this.affordableNextLevel(budget)
+    }
+
+    this.level = level
+  }
+
+  updateResourcePredefinedLevel (level: number): void {
+    this.level = Math.min(level, this.effectiveLevelCap)
+    this.fragmentsInvested = noTalismanFragments
+
+    for (let n = 0; n < this.level; n++) {
+      const nextCost = this.costs(this.baseMult, n)
+      for (const item in nextCost) {
+        this.fragmentsInvested[item as TalismanCraftItems] += nextCost[item as TalismanCraftItems]
+      }
+    }
+  }
+
+  buyTalismanLevel (): void {
+    const costs = this.costs(this.baseMult, this.level)
+    const budget = {
+      shard: player.talismanShards,
+      commonFragment: player.commonFragments,
+      uncommonFragment: player.uncommonFragments,
+      rareFragment: player.rareFragments,
+      epicFragment: player.epicFragments,
+      legendaryFragment: player.legendaryFragments,
+      mythicalFragment: player.mythicalFragments
+    }
+    const canAffordNextLevel = this.affordableNextLevel(budget)
+
+    if (canAffordNextLevel) {
+      player.talismanShards -= costs.shard
+      player.commonFragments -= costs.commonFragment
+      player.uncommonFragments -= costs.uncommonFragment
+      player.rareFragments -= costs.rareFragment
+      player.epicFragments -= costs.epicFragment
+      player.legendaryFragments -= costs.legendaryFragment
+      player.mythicalFragments -= costs.mythicalFragment
+
+      for (const item in costs) {
+        this.fragmentsInvested[item as TalismanCraftItems] += costs[item as TalismanCraftItems]
+      }
+
+      this.level += 1
+    }
+  }
+
+  buyLevelToRarityIncrease (): void {
+    const levelsToBuy = this.levelsUntilRarityIncrease
+    if (levelsToBuy > 0) {
+      for (let i = 0; i < levelsToBuy; i++) {
+        if (!this.affordableNextLevel(this.fragmentsInvested)) {
+          break
+        }
+        this.buyTalismanLevel()
+      }
+    }
+  }
+
+  buyLevelToMax (): void {
+    const levelsToBuy = this.effectiveLevelCap - this.level
+    if (levelsToBuy > 0) {
+      for (let i = 0; i < levelsToBuy; i++) {
+        if (!this.affordableNextLevel(this.fragmentsInvested)) {
+          break
+        }
+        this.buyTalismanLevel()
+      }
+    }
+  }
+
+  public get rewardDesc (): string {
+    const effectiveLevel = this.level
+    return this.rewards(effectiveLevel).desc
+  }
+
+  public get bonus () {
+    const effectiveLevel = this.level
+    return this.rewards(effectiveLevel)
+  }
+}
+
+const regularCostProgression = (baseMult: number, level: number): Record<TalismanCraftItems, number> => {
+  let priceMult = baseMult
+  if (level >= 120) {
+    priceMult *= (level - 90) / 30
+  }
+  if (level >= 150) {
+    priceMult *= (level - 120) / 30
+  }
+  if (level >= 180) {
+    priceMult *= (level - 170) / 10
+  }
+
+  return {
+    'shard': priceMult * Math.max(0, Math.floor(1 + 1 / 8 * Math.pow(level, 3))),
+    'commonFragment': level >= 30 ? priceMult * Math.max(0, Math.floor(1 + 1 / 32 * Math.pow(level - 30, 3))) : 0,
+    'uncommonFragment': level >= 60 ? priceMult * Math.max(0, Math.floor(1 + 1 / 384 * Math.pow(level - 60, 3))) : 0,
+    'rareFragment': level >= 90 ? priceMult * Math.max(0, Math.floor(1 + 1 / 500 * Math.pow(level - 90, 3))) : 0,
+    'epicFragment': level >= 120 ? priceMult * Math.max(0, Math.floor(1 + 1 / 375 * Math.pow(level - 120, 3))) : 0,
+    'legendaryFragment': level >= 150 ? priceMult * Math.max(0, Math.floor(1 + 1 / 192 * Math.pow(level - 150, 3))) : 0,
+    'mythicalFragment': level >= 150 ? priceMult * Math.max(0, Math.floor(1 + 1 / 1280 * Math.pow(level - 150, 3))) : 0
+  }
+}
+
+const exponentialCostProgression = (baseMult: number, level: number): Record<TalismanCraftItems, number> => {
+  return {
+    shard: Math.floor(baseMult * Math.pow(1.12, level) * 100),
+    commonFragment: level >= 30 ? Math.floor(baseMult * Math.pow(1.12, level - 30) * 50) : 0,
+    uncommonFragment: level >= 60 ? Math.floor(baseMult * Math.pow(1.12, level - 60) * 25) : 0,
+    rareFragment: level >= 90 ? Math.floor(baseMult * Math.pow(1.12, level - 90) * 20) : 0,
+    epicFragment: level >= 120 ? Math.floor(baseMult * Math.pow(1.12, level - 120) * 15) : 0,
+    legendaryFragment: level >= 150 ? Math.floor(baseMult * Math.pow(1.12, level - 150) * 10) : 0,
+    mythicalFragment: level >= 150 ? Math.floor(baseMult * Math.pow(1.12, level - 150) * 5) : 0
   }
 }
 
