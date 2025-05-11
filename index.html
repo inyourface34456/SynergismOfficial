@@ -1469,76 +1469,78 @@
                 <p id="talismanFragmentCost" aria-live="polite">Cost for 1: 1e6 Obtainium</p>
             </div>
             <div class="talismansCenter">
-                <div class="talismansContainer">
-                    <div class="talismanContainer" id="talisman1area">
+                <div class="talismansContainer" id="talismansContainerDiv">
+                    <!--<div class="talismanContainer" id="exemptionTalismanArea">
                         <span class="talismanName" style="color: limegreen;" i18n="runes.talismans.names.exemption"></span>
-                        <img class="talismanIcon" id="talisman1" alt="Exemption Talisman" src="Pictures/Default/TalismanExemption.png" loading="lazy">
-                        <span class="talismanLevel" id="talisman1level">Level 0/30</span>
-                        <button class="talismanBtn" id="leveluptalisman1" style="color: silver; border: 2px solid white;" i18n="runes.talismans.fortify"></button>
-                        <button class="talismanBtn" id="enhancetalisman1" style="color: gold; border: 2px solid orangered" i18n="runes.talismans.enhance"></button>
-                        <button class="talismanBtn" id="respectalisman1" style="color: plum; border: 2px solid white"  i18n="runes.talismans.respec"></button>
+                        <img class="talismanIcon" id="exemptionTalisman" alt="Exemption Talisman" src="Pictures/Default/TalismanExemption.png" loading="lazy">
+                        <span class="talismanLevel" id="exemptionTalismanLevel">Level 0/30</span>
+                        <button class="talismanBtn" id="exemptionTalismanLevelOnce" style="color: silver; border: 2px solid white;" i18n="runes.talismans.fortify"></button>
+                        <button class="talismanBtn" id="exemptionTalismanLevelRarity" style="color: gold; border: 2px solid orangered" i18n="runes.talismans.enhance"></button>
+                        <button class="talismanBtn" id="exemptionTalismanLevelAll" style="color: plum; border: 2px solid white"  i18n="runes.talismans.respec"></button>
                     </div>
-                    <div class="talismanContainer" id="talisman2area">
+                    <div class="talismanContainer" id="chronosTalismanArea">
                         <span class="talismanName" style="color: cyan" i18n="runes.talismans.names.chronos"></span>
-                        <img class="talismanIcon" id="talisman2" alt="Chronos Talisman" src="Pictures/Default/TalismanChronos.png" loading="lazy">
-                        <span class="talismanLevel" id="talisman2level">Level 0/30</span>
+                        <img class="talismanIcon" id="chronosTalisman" alt="Chronos Talisman" src="Pictures/Default/TalismanChronos.png" loading="lazy">
+                        <span class="talismanLevel" id="chronosTalismanLevel">Level 0/30</span>
                         <button class="talismanBtn" id="leveluptalisman2" style="color: silver; border: 2px solid white;" i18n="runes.talismans.fortify"></button>
                         <button class="talismanBtn" id="enhancetalisman2" style="color: gold; border: 2px solid orangered" i18n="runes.talismans.enhance"></button>
                         <button class="talismanBtn" id="respectalisman2" style="color: plum; border: 2px solid white" i18n="runes.talismans.respec"></button>
                     </div>
-                    <div class="talismanContainer" id="talisman3area">
+                    <div class="talismanContainer" id="midasTalismanArea">
                         <span class="talismanName" style="color: orange" i18n="runes.talismans.names.midas"></span>
-                        <img class="talismanIcon" id="talisman3" alt="Mdas Talisman" src="Pictures/Default/TalismanMidas.png" loading="lazy">
-                        <span class="talismanLevel" id="talisman3level">Level 0/30</span>
+                        <img class="talismanIcon" id="midasTalisman" alt="Mdas Talisman" src="Pictures/Default/TalismanMidas.png" loading="lazy">
+                        <span class="talismanLevel" id="midasTalismanLevel">Level 0/30</span>
                         <button class="talismanBtn" id="leveluptalisman3" style="color: silver; border: 2px solid white;" i18n="runes.talismans.fortify"></button>
                         <button class="talismanBtn" id="enhancetalisman3" style="color: gold; border: 2px solid orangered" i18n="runes.talismans.enhance"></button>
                         <button class="talismanBtn" id="respectalisman3" style="color: plum; border: 2px solid white" i18n="runes.talismans.respec"></button>
                     </div>
-                    <div class="talismanContainer" id="talisman4area">
+                    <div class="talismanContainer" id="metaphysicsTalismanArea">
                         <span class="talismanName" style="color: salmon" i18n="runes.talismans.names.metaphysics"></span>
-                        <img class="talismanIcon" id="talisman4" alt="Metaphysics Talisman" src="Pictures/Default/TalismanMetaphysics.png" loading="lazy">
-                        <span class="talismanLevel" id="talisman4level">Level 0/30</span>
+                        <img class="talismanIcon" id="metaphysicsTalisman" alt="Metaphysics Talisman" src="Pictures/Default/TalismanMetaphysics.png" loading="lazy">
+                        <span class="talismanLevel" id="metaphysicsTalismanLevel">Level 0/30</span>
                         <button class="talismanBtn" id="leveluptalisman4" style="color: silver; border: 2px solid white;" i18n="runes.talismans.fortify"></button>
                         <button class="talismanBtn" id="enhancetalisman4" style="color: gold; border: 2px solid orangered" i18n="runes.talismans.enhance"></button>
                         <button class="talismanBtn" id="respectalisman4" style="color: plum; border: 2px solid white" i18n="runes.talismans.respec"></button>
                     </div>
-                    <div class="talismanContainer" id="talisman5area">
+                    <div class="talismanContainer" id="polymathTalismanArea">
                         <span class="talismanName crimsonText" i18n="runes.talismans.names.polymath"></span>
-                        <img class="talismanIcon" id="talisman5" alt="Polymath talisman" src="Pictures/Default/TalismanPolymath.png" loading="lazy">
-                        <span class="talismanLevel" id="talisman5level">Level 0/30</span>
+                        <img class="talismanIcon" id="polymathTalisman" alt="Polymath talisman" src="Pictures/Default/TalismanPolymath.png" loading="lazy">
+                        <span class="talismanLevel" id="polymathTalismanLevel">Level 0/30</span>
                         <button class="talismanBtn" id="leveluptalisman5" style="color: silver; border: 2px solid white;" i18n="runes.talismans.fortify"></button>
                         <button class="talismanBtn" id="enhancetalisman5" style="color: gold; border: 2px solid orangered" i18n="runes.talismans.enhance"></button>
                         <button class="talismanBtn" id="respectalisman5" style="color: plum; border: 2px solid white" i18n="runes.talismans.respec"></button>
                     </div>
-                    <div class="talismanContainer" id="talisman6area">
+                    <div class="talismanContainer" id="mortuusTalismanArea">
                         <span class="talismanName" style="color: burlywood" i18n="runes.talismans.names.mortuus"></span>
-                        <img class="talismanIcon" id="talisman6" alt="Mortuus Est Talisman" src="Pictures/Default/TalismanMortuus.png" loading="lazy">
-                        <span class="talismanLevel" id="talisman6level">Level 0/30</span>
+                        <img class="talismanIcon" id="mortuusTalisman" alt="Mortuus Est Talisman" src="Pictures/Default/TalismanMortuus.png" loading="lazy">
+                        <span class="talismanLevel" id="mortuusTalismanLevel">Level 0/30</span>
                         <button class="talismanBtn" id="leveluptalisman6" style="color: silver; border: 2px solid white;" i18n="runes.talismans.fortify"></button>
                         <button class="talismanBtn" id="enhancetalisman6" style="color: gold; border: 2px solid orangered" i18n="runes.talismans.enhance"></button>
                         <button class="talismanBtn" id="respectalisman6" style="color: plum; border: 2px solid white" i18n="runes.talismans.respec"></button>
                     </div>
-                    <div class="talismanContainer" id="talisman7area">
+                    <div class="talismanContainer" id="plasticTalismanArea">
                         <span class="talismanName" style="color: chartreuse" i18n="runes.talismans.names.plastic"></span>
-                        <img class="talismanIcon" id="talisman7" alt="P2W Talisman" src="Pictures/Default/TalismanP2W.png" loading="lazy">
-                        <span class="talismanLevel" id="talisman7level">Level 0/30</span>
+                        <img class="talismanIcon" id="plasticTalisman" alt="P2W Talisman" src="Pictures/Default/TalismanP2W.png" loading="lazy">
+                        <span class="talismanLevel" id="plasticTalismanLevel">Level 0/30</span>
                         <button class="talismanBtn" id="leveluptalisman7" style="color: silver; border: 2px solid white;" i18n="runes.talismans.fortify"></button>
                         <button class="talismanBtn" id="enhancetalisman7" style="color: gold; border: 2px solid orangered" i18n="runes.talismans.enhance"></button>
                         <button class="talismanBtn" id="respectalisman7" style="color: plum; border: 2px solid white" i18n="runes.talismans.respec"></button>
-                    </div>
+                    </div>-->
                 </div>
                 <div class="talismansModify">
                     <button class="talismanBtn" id="respecAllTalismans" i18n="runes.talismans.respecAll"></button>
 
                     <div id="talismanEffect" aria-live="polite">
-                        <p id="talismanSummary" style="color: silver"></p>
-                        <p id="talismanBonus"></p>
-                        <p id="talismanRune1Effect" style="color: cyan"></p>
-                        <p id="talismanRune2Effect" style="color: plum"></p>
-                        <p id="talismanRune3Effect" style="color: lightblue"></p>
-                        <p id="talismanRune4Effect" style="color: limegreen"></p>
-                        <p id="talismanRune5Effect" class="crimsonText"></p>
-                        <p id="talismanMythicEffect" style="color: gold"></p>
+                        <p id="talismanTitle"></p>
+                        <p id="talismanDescription" style="color: silver"></p>
+                        <p id="talismanInscriptionBonus"></p>
+                        <p id="talismanSignatureBonus"></p>
+                        <p id="talismanSpeedEffect" style="color: cyan"></p>
+                        <p id="talismanDupeEffect" style="color: plum"></p>
+                        <p id="talismanThriftEffect" style="color: lightblue"></p>
+                        <p id="talismanPrismEffect" style="color: limegreen"></p>
+                        <p id="talismanSIEffect" class="crimsonText"></p>
+                        <p id="talismanIAEffect" style="color: gold"></p>
                     </div>
 
                     <div id="talismanlevelup" aria-live="polite" style="table-layout: fixed; display: none">

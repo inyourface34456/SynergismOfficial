@@ -1,4 +1,5 @@
 import { CorruptionLoadout, type Corruptions, CorruptionSaves } from '../Corruptions'
+import { getTalisman } from '../Talismans'
 import { convertArrayToCorruption } from './PlayerJsonSchema'
 import { playerSchema } from './PlayerSchema'
 
@@ -41,6 +42,16 @@ export const playerUpdateVarSchema = playerSchema.transform((player) => {
     player.lifetimeRedAmbrosia += Math.floor(ultimatePixels * 0.2 + redBarFilled)
   }
 
+  if (player.talismanLevels !== undefined) {
+    getTalisman('exemption').updateResourcePredefinedLevel(player.talismanLevels[0])
+    getTalisman('chronos').updateResourcePredefinedLevel(player.talismanLevels[1])
+    getTalisman('midas').updateResourcePredefinedLevel(player.talismanLevels[2])
+    getTalisman('metaphysics').updateResourcePredefinedLevel(player.talismanLevels[3])
+    getTalisman('polymath').updateResourcePredefinedLevel(player.talismanLevels[4])
+    getTalisman('mortuus').updateResourcePredefinedLevel(player.talismanLevels[5])
+    getTalisman('plastic').updateResourcePredefinedLevel(player.talismanLevels[6])
+  }
+
   Reflect.deleteProperty(player, 'usedCorruptions')
   Reflect.deleteProperty(player, 'prototypeCorruptions')
   Reflect.deleteProperty(player, 'corruptionShowStats')
@@ -48,6 +59,15 @@ export const playerUpdateVarSchema = playerSchema.transform((player) => {
   Reflect.deleteProperty(player, 'corruptionLoadoutNames')
   Reflect.deleteProperty(player, 'ultimatePixels')
   Reflect.deleteProperty(player, 'cubeUpgradeRedBarFilled')
+  Reflect.deleteProperty(player, 'talismanLevels')
+  Reflect.deleteProperty(player, 'talismanRarity')
+  Reflect.deleteProperty(player, 'talismanOne')
+  Reflect.deleteProperty(player, 'talismanTwo')
+  Reflect.deleteProperty(player, 'talismanThree')
+  Reflect.deleteProperty(player, 'talismanFour')
+  Reflect.deleteProperty(player, 'talismanFive')
+  Reflect.deleteProperty(player, 'talismanSix')
+  Reflect.deleteProperty(player, 'talismanSeven')
 
   return player
 })

@@ -97,6 +97,7 @@ import { getRedAmbrosiaUpgrade } from './RedAmbrosiaUpgrades'
 import { shopData } from './Shop'
 import { calculateSingularityDebuff, getFastForwardTotalMultiplier } from './singularity'
 import { format, player } from './Synergism'
+import { getTalisman, sumOfTalismanRarities } from './Talismans'
 import type { GlobalVariables } from './types/Synergism'
 import { sumContents } from './Utility'
 import { Globals as G } from './Variables'
@@ -970,8 +971,8 @@ export const allOfferingStats = [
   {
     i18n: 'ResearchTalismans',
     stat: () =>
-      1 + 0.0003 * player.talismanLevels[3 - 1] * player.researches[149]
-      + 0.0004 * player.talismanLevels[3 - 1] * player.researches[179] // Research 6x24,8x4
+      1 + 0.0003 * getTalisman('midas').level * player.researches[149]
+      + 0.0004 * getTalisman('midas').level * player.researches[179] // Research 6x24,8x4
   },
   {
     i18n: 'TutorialBonus',
@@ -1080,7 +1081,7 @@ export const allOfferingStats = [
   },
   {
     i18n: 'CubeUpgradeCx22',
-    stat: () => Math.pow(1.04, player.cubeUpgrades[72] * sumContents(player.talismanRarity)) // Cube upgrade 8x2 (Cx22)
+    stat: () => Math.pow(1.04, player.cubeUpgrades[72] * sumOfTalismanRarities()) // Cube upgrade 8x2 (Cx22)
   },
   {
     i18n: 'CashGrab2',
@@ -1380,7 +1381,7 @@ export const allObtainiumIgnoreDRStats: StatLine[] = [
   },
   {
     i18n: 'CubeUpgradeCx21',
-    stat: () => Math.pow(1.04, player.cubeUpgrades[71] * sumContents(player.talismanRarity)) // Cube Upgrade 8x1
+    stat: () => Math.pow(1.04, player.cubeUpgrades[71] * sumOfTalismanRarities()) // Cube Upgrade 8x1
   },
   {
     i18n: 'ObtainiumEX3',
@@ -1793,7 +1794,7 @@ export const allGlobalSpeedStats: StatLine[] = [
   },
   {
     i18n: 'ChronosTalisman',
-    stat: () => 1 + 0.1 * (player.talismanRarity[2 - 1] - 1) // Chronos Talisman bonus
+    stat: () => getTalisman('chronos').bonus.globalSpeed // Chronos Talisman bonus
   },
   {
     i18n: 'Challenge15',

@@ -1256,7 +1256,7 @@
       "12": "[2x2] Raise building power to the power of (1 + level * 0.09).",
       "13": "[2x3] For each 20 Cubes opened at once, you get 1 additional tribute at random.",
       "14": "[2x4] Iris shines her light on you. The effect power is now increased by +0.01 (+0.005 if >1000 tributes) per level.",
-      "15": "[2x5] Ares teaches you the Art of War. The effect power is now increased by +0.01 (+0.0033 if >1000 tributes) per level.",
+      "15": "[2x5] Ares teaches you the Art of War. The effect power is now increased by +0.02 (+0.0066 if >1000 tributes) per level.",
       "16": "[2x6] You got it buster! +20 ALL max rune levels per level.",
       "17": "[2x7] Yep. +5 Exponent per level to crystals.",
       "18": "[2x8] Quantum tunnelling ftw. +20% global game speed.",
@@ -1291,7 +1291,7 @@
       "47": "[5x7] Gain +10% more Obtainium per level!",
       "48": "[5x8] When you ascend, start with 1 worker Ant (this is a lot better than it sounds!)",
       "49": "[5x9] When you ascend, gain 1 of each Challenge 6-8 completion.",
-      "50": "[5x10] What doesn't this boost? +0.01% Accelerators, Multipliers, Accelerator Boosts, +0.02% Obtainium, +0.02% Offerings, +0.04 Max Rune Levels, +1 Effective ELO, +0.0004 Talisman bonuses per level, 0.00066% Tax reduction per level.",
+      "50": "[5x10] What doesn't this boost? +0.01% Accelerators, Multipliers, Accelerator Boosts, +0.02% Obtainium, +0.02% Offerings, +0.04 Max Rune Levels, +1 Effective ELO, 0.00066% Tax reduction per level. Every 10,000 levels grant +0.6% more free Rune Levels from Talismans!",
       "51": "[Cx1] Wow! Bakery is open!!! Immediately unlock all automations in the cube tab, and researches as well.",
       "52": "[Cx2] These sugar cookies sure boost your blood sugar. Gain +1% global speed per level.",
       "53": "[Cx3] What a hearty snack. Gain +0.1% Quarks per level.",
@@ -1452,8 +1452,8 @@
       "103": "[5x3] Pray to Ant God for +5% sacrifice rewards per level!",
       "104": "[5x4] You're beginning to feel like an Ant God (Ant God): +5% sacrifice reward per level!",
       "105": "[5x5] Buy this and be able to run the first five Challenges 9,001 times! (Note that requirements scale a LOT faster after 75, and again after 1,000)",
-      "106": "[5x6] Engrave your talismans with Obtainium to get +0.03 Rune Levels per talisman level per level.",
-      "107": "[5x7] Refine your talismans with the powder of Obtainium to get +0.03 Rune Levels per talisman level per level again.",
+      "106": "[5x6] Engrave your talismans with Obtainium to get +0.1% more free Rune Levels from Talismans per level!",
+      "107": "[5x7] Refine your talismans with the powder of Obtainium to get +0.1% Rune Levels from Talismans per level, again!",
       "108": "[5x8] A simple trick makes your base Ant ELO increase by 25 per level!",
       "109": "[5x9] A more convoluted trick makes your base Ant ELO increase by 25 per level again!",
       "110": "[5x10] Gain +1% more ELO from Ant sources per level because why not?",
@@ -1462,9 +1462,9 @@
       "113": "[5x13] Newton's Delight [+10 max Prism Rune Level per level, +1% EXP to that rune]",
       "114": "[5x14] Five-Finger discounts [+10 max Thrift Rune Level per level, +1% EXP to that rune]",
       "115": "[5x15] Scientific Breakthrough [+10 max SI Rune Level per level +1% EXP to that rune]",
-      "116": "[5x16] Talismans have +0.015 Rune levels per talisman level per level. Levelception!",
-      "117": "[5x17] Talismans have another +0.015 Rune levels per talisman level per level!",
-      "118": "[5x18] For 'neutral' talisman effects, increase by +0.06 per level!",
+      "116": "[5x16] Talismans grant another +0.1% more free Rune Levels per level!",
+      "117": "[5x17] Talismans grant yet ANOTHER +0.1% more free Rune Levels per level!",
+      "118": "[5x18] Try this for size: Talismans grant +0.2% more free Rune Levels per level! It's like twice as good as the other upgrades.",
       "119": "[5x19] Gain +0.25% Wow! Cubes per level upon Ascension.",
       "120": "[5x20] Gain another +0.25% Wow! Cubes per level upon Ascension.",
       "121": "[5x21] Bend time to your will, making all ticks 2% faster each level.",
@@ -1546,7 +1546,7 @@
       "197": "[8x22] +0.6% Cubes in Ascension Bank / level. No one knows how. Bank error perhaps.",
       "198": "[8x23] +0.06% tributes from Cubes / level!. Wow! Cubes really has a lot of manufacturing errors in your favor.",
       "199": "[8x24] +10% faster Tesseract Buildings / level. THE ARISEN. WITH THE PRAISE OF THE SINGULARITY.",
-      "200": "[8x25] Gain the power of a thousand suns! +0.01% Accelerators, A. Boosts, Multipliers, Offerings, and +0.004% Cubes, +0.04 Max Rune level, +(level/400) max Talisman Level, +(level/200) free Ants, 0.000666% Tax reduction per level."
+      "200": "[8x25] Gain the power of a thousand suns! +0.01% Accelerators, A. Boosts, Multipliers, Offerings, and +0.004% Cubes, +0.04 Max Rune level, +(level/200) free Ants, 0.000666% Tax reduction per level. Every 10,000 levels grant +0.4% more free Rune Levels from Talismans!"
     },
     "thanksToResearches": "Thanks to researches you automatically gain {{x}} Obtainium per real life second.",
     "level": "Level {{x}}/{{y}}",
@@ -2646,7 +2646,7 @@
       "4": "Increase Obtainium gain +4% per level.",
       "5": "Multiply Ant speed by (1 + log10(Constant + 1)/10)^level",
       "6": "Add +2 free Ant Levels per level.",
-      "7": "Provides 7 free rune levels and increases the rune cap by 3 per level.",
+      "7": "Provides 7 free rune levels per level, up to +7,000.",
       "8": "Increase the rune EXP given by Offerings by 10% per level [Additive]",
       "9": "When bought, rune effectiveness is increased by Log4(Talisman Shards +1) %",
       "10": "When bought, gain Log4(Constant + 1)% more Wow! Cubes and Tesseracts on Ascension."
@@ -3601,9 +3601,61 @@
       "autoBuyOff": "Auto Buy: OFF",
       "clickBuyEveryType": "Click to buy every type of Talisman Shards and Fragments, if affordable",
       "costToBuy": "Cost to buy {{name}} ({{buyAmount}}): {{obtainium}} Obtainium and {{offerings}} Offerings.",
+      "rarity": {
+        "1": "<<white | Common>>",
+        "2": "<<green | Uncommon>>",
+        "3": "<<lightblue | Rare>>",
+        "4": "<<orchid | Epic>>",
+        "5": "<<orange | Legendary>>",
+        "6": "<<crimson | MYTHIC!>>",
+        "7": "<<cyan | IMMACULATE!>>"
+      },
       "modifiers": {
         "positive": "{{name}}: Positive",
         "negative": "{{name}}: Negative"
+      },
+      "level": "{{x}}/{{y}}",
+      "exemption": {
+        "name": "The Exemption Talisman",
+        "description": "Fake Science Monthly says wearing this trinket lowers your taxes!",
+        "inscription": "Inscription: Your taxes are multiplied by <<gold|{{val}}>>.",
+        "signature": "TO BE IMPLEMENTED! exemption"
+      },
+      "chronos": {
+        "name": "Talisman of Chronology",
+        "description": "Time flows just a little faster when wear this.",
+        "inscription": "Inscription: Global Speed is increased by <<gold|{{val}}>>.",
+        "signature": "TO BE IMPLEMENTED! chronos"
+      },
+      "midas": {
+        "name": "Midas Necklace",
+        "description": "If Midas turned all he touched to gold...",
+        "inscription": "Inscription: Rune Blessing bonuses are increased by <<gold|{{val}}>>.",
+        "signature": "TO BE IMPLEMENTED! midas"
+      },
+      "metaphysics": {
+        "name": "Metaphysical Gem",
+        "description": "Do you wear this, or does this wear you?",
+        "inscription": "Inscription: This Talismans' Bonus Rune Levels are increased by <<gold|{{val}}>>.",
+        "signature": "TO BE IMPLEMENTED! metaphysics"
+      },
+      "polymath": {
+        "name": "Trinket of the Polymath",
+        "description": "Do you feel like an exiled trickster?",
+        "inscription": "Inscription: Ascension Speed is increased by <<gold|{{val}}>>.",
+        "signature": "TO BE IMPLEMENTED! polymath"
+      },
+      "mortuus": {
+        "name": "Preserved Ant Talisman",
+        "description": "It's said that great sacrifice was made for this Talisman to exist.",
+        "inscription": "Inscription: Ant ELO is increased by <<gold|{{val}}>>.",
+        "signature": "TO BE IMPLEMENTED! mortuus"
+      },
+      "plastic": {
+        "name": "A hunk of Plastic",
+        "description": "Probably purchased on a buy now, pay later app.",
+        "inscription": "Inscription: Quark Gain is increased by <<gold|{{val}}>>.",
+        "signature": "Signature: None. You cannot seem to sign your name on this hunk of plastic."
       },
       "shards": {
         "shard": "Talisman Shard",
@@ -3642,11 +3694,12 @@
         "plastic": "Gain 1x normal production (Joke)!"
       },
       "bonusRuneLevels": {
-        "speed": "Bonus Speed Rune Levels: {{x}}",
-        "duplication": "Bonus Duplication Rune Levels: {{x}}",
-        "prism": "Bonus Prism Rune Levels: {{x}}",
-        "thrift": "Bonus Thrift Rune Levels: {{x}}",
-        "SI": "Bonus SI Rune Levels: {{x}}"
+        "speed": "Bonus Speed Rune Levels: <<orange|{{x}}>>",
+        "duplication": "Bonus Duplication Rune Levels: <<orange|{{x}}>>",
+        "prism": "Bonus Prism Rune Levels: <<orange|{{x}}>>",
+        "thrift": "Bonus Thrift Rune Levels: <<orange|{{x}}>>",
+        "SI": "Bonus Superior Intellect Rune Levels: <<orange|{{x}}>>",
+        "IA": "Bonus Infinite Ascent Rune Levels: <<orange|{{x}}>>"
       },
       "mythicEffects": {
         "exemption": "Mythic Effect: +400 Duplication Rune Levels!",
@@ -4600,7 +4653,7 @@
         "5": "Athena's Tribute x{{amount}}: +{{bonus}}% Obtainium Gain",
         "6": "Artemis' Tribute x{{amount}}: +{{bonus}}% Ant Speed",
         "7": "Ares' Tribute x{{amount}}: +{{bonus}}% Sacrifice Reward",
-        "8": "Moloch's Tribute x{{amount}}: +{{bonus}} Effective ELO",
+        "8": "Moloch's Tribute x{{amount}}: +{{bonus}}% Effective ELO (additive)",
         "9": "Midas' Tribute x{{amount}}: +{{bonus}} Bonus Rune Levels on Talismans",
         "10": "Chronos' Tribute x{{amount}}: +{{bonus}}% Global Time Acceleration"
       }
@@ -4618,7 +4671,7 @@
         "5": "Athena's Gift x{{amount}}: +{{bonus}}% Athena Tribute Power",
         "6": "Artemis' Gift x{{amount}}: +{{bonus}}% Artemis Tribute Power",
         "7": "Ares' Gift x{{amount}}: +{{bonus}}% Ares Tribute Power",
-        "8": "Moloch's Gift x{{amount}}: +{{bonus}}% Moloch Tribute Power",
+        "8": "Moloch's Gift x{{amount}}: +{{bonus}}% Effective ELO (additive)",
         "9": "Midas' Gift x{{amount}}: +{{bonus}}% Midas Tribute Power",
         "10": "Chronos' Gift x{{amount}}: +{{bonus}}% Chronos Tribute Power"
       }
@@ -4636,7 +4689,7 @@
         "5": "Athena's Benediction x{{amount}}: +{{bonus}}% Athena Gift Power",
         "6": "Artemis' Benediction x{{amount}}: +{{bonus}}% Artemis Gift Power",
         "7": "Ares' Benediction x{{amount}}: +{{bonus}}% Ares Gift Power",
-        "8": "Moloch's Benediction x{{amount}}: +{{bonus}}% Moloch Gift Power",
+        "8": "Moloch's Benediction x{{amount}}: +{{bonus}}% Effective ELO (additive)",
         "9": "Midas' Benediction x{{amount}}: +{{bonus}}% Midas Gift Power",
         "10": "Chronos' Benediction x{{amount}}: +{{bonus}}% Chronos Gift Power"
       }

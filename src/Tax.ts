@@ -5,6 +5,7 @@ import { Globals as G } from './Variables'
 import Decimal from 'break_infinity.js'
 import { achievementaward } from './Achievements'
 import { CalcECC } from './Challenges'
+import { getTalisman } from './Talismans'
 
 export const calculatetax = () => {
   let exp = 1
@@ -101,7 +102,7 @@ export const calculatetax = () => {
       1 + .2 / 60 * player.challengecompletions[10] * player.upgrades[125] + 0.1 * player.platonicUpgrades[5]
         + 0.2 * player.platonicUpgrades[10] + (G.platonicBonusMultiplier[5] - 1)
     )
-  exponent *= 1 - 0.10 * (player.talismanRarity[1 - 1] - 1)
+  exponent *= 1 + getTalisman('exemption').bonus.taxReduction
   exponent *= Math.pow(0.98, 3 / 5 * Math.log(1 + player.rareFragments) / Math.log(10) * player.researches[159])
   exponent *= Math.pow(0.966, CalcECC('ascension', player.challengecompletions[13]))
   exponent *= 1 - 0.666 * player.researches[200] / 100000

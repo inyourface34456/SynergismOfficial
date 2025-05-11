@@ -52,7 +52,7 @@ import { getGoldenQuarkCost } from './singularity'
 import { loadStatisticsUpdate } from './Statistics'
 import { format, formatTimeShort, player } from './Synergism'
 import { getActiveSubTab, Tabs } from './Tabs'
-import { calculateMaxTalismanLevel } from './Talismans'
+import { getTalisman, getTalismanBonus, type TalismanKeys } from './Talismans'
 import type { Player, ZeroToFour } from './types/Synergism'
 import { sumContents, timeReminingHours } from './Utility'
 import { Globals as G } from './Variables'
@@ -556,15 +556,6 @@ export const visualUpdateRunes = () => {
     return
   }
   if (getActiveSubTab() === 0) {
-    // Placeholder and place work similarly to buildings, except for the specific Talismans.
-    const talismans = [
-      'rune1Talisman',
-      'rune2Talisman',
-      'rune3Talisman',
-      'rune4Talisman',
-      'rune5Talisman'
-    ] as const
-
     DOMCacheGetOrSet('offeringCount').textContent = i18next.t(
       'runes.offeringsYouHave',
       {
@@ -574,10 +565,7 @@ export const visualUpdateRunes = () => {
 
     for (let i = 1; i <= 7; i++) {
       // First one updates level, second one updates TNL, third updates orange bonus levels
-      let place = G[talismans[i - 1]]
-      if (i > 5) {
-        place = 0
-      }
+
       const runeLevel = player.runelevels[i - 1]
       const maxLevel = calculateMaxRunes(i)
       DOMCacheGetOrSet(`rune${i}level`).childNodes[0].textContent = i18next.t(
@@ -603,15 +591,16 @@ export const visualUpdateRunes = () => {
           'runes.bonusAmount',
           {
             x: format(
-              7 * player.constantUpgrades[7]
+              7 * Math.min(player.constantUpgrades[7], 1000)
                 + Math.min(1e7, player.antUpgrades[8]! + G.bonusant9)
-                + place
+                + getTalismanBonus('speed') // FIX
             )
           }
         )
       } else if (i === 6) {
         DOMCacheGetOrSet(`bonusrune${i}`).textContent = i18next.t('runes.bonusAmount', {
           x: player.cubeUpgrades[73] + (PCoinUpgradeEffects.INSTANT_UNLOCK_2 ? 6 : 0) + player.campaigns.bonusRune6
+            + getTalismanBonus('IA')
         })
       } else {
         DOMCacheGetOrSet(`bonusrune${i}`).textContent = i18next.t('runes.bonusNope')
@@ -652,12 +641,11 @@ export const visualUpdateRunes = () => {
   }
 
   if (getActiveSubTab() === 1) {
-    for (let i = 0; i < 7; i++) {
-      const maxTalismanLevel = calculateMaxTalismanLevel(i)
-      // TODO(@KhafraDev): i18n
-      DOMCacheGetOrSet(`talisman${i + 1}level`).textContent = `${player.ascensionCount > 0 ? '' : 'Level '} ${
-        format(player.talismanLevels[i])
-      }/${format(maxTalismanLevel)}`
+    for (const talisman of Object.keys(player.talismans)) {
+      DOMCacheGetOrSet(`${talisman}TalismanLevel`).textContent = i18next.t('runes.talismans.level', {
+        x: format(getTalisman(talisman as TalismanKeys).level, 0, true),
+        y: format(getTalisman(talisman as TalismanKeys).effectiveLevelCap, 0, true)
+      })
     }
   } else if (getActiveSubTab() === 2) {
     const blessingMultiplierArray = [0, 8, 10, 6.66, 2, 1]
@@ -978,7 +966,23 @@ export const visualUpdateCubes = () => {
         if (cubeArray[i]! >= 1000 && i !== 6) {
           augmentAccuracy += 2
         }
-        const aestheticMultiplier = i === 1 || i === 8 || i === 9 ? 1 : 100
+
+        if (i === 8) {
+          DOMCacheGetOrSet('cube8Bonus').innerHTML = i18next.t(
+            'wowCubes.cubes.items.8',
+            {
+              amount: format(cubeArray[i], 0, true),
+              bonus: format(
+                Math.log10(1 + player.cubeBlessings.antELO),
+                accuracy[i]! + augmentAccuracy,
+                true
+              )
+            }
+          )
+          continue
+        }
+
+        const aestheticMultiplier = i === 1 || i === 9 ? 1 : 100
         DOMCacheGetOrSet(`cube${i}Bonus`).innerHTML = i18next.t(
           `wowCubes.cubes.items.${i}`,
           {
@@ -1032,6 +1036,20 @@ export const visualUpdateCubes = () => {
         let augmentAccuracy = 0
         if (tesseractArray[i]! >= 1000 && i !== 6) {
           augmentAccuracy += 2
+        }
+        if (i === 8) {
+          DOMCacheGetOrSet('tesseract8Bonus').innerHTML = i18next.t(
+            'wowCubes.tesseracts.items.8',
+            {
+              amount: format(tesseractArray[i], 0, true),
+              bonus: format(
+                Math.log10(1 + player.tesseractBlessings.antELO),
+                accuracy[i]! + augmentAccuracy,
+                true
+              )
+            }
+          )
+          continue
         }
         DOMCacheGetOrSet(`tesseract${i}Bonus`).innerHTML = i18next.t(
           `wowCubes.tesseracts.items.${i}`,
@@ -1090,6 +1108,20 @@ export const visualUpdateCubes = () => {
         let augmentAccuracy = 0
         if (hypercubeArray[i]! >= 1000) {
           augmentAccuracy += 2
+        }
+        if (i === 8) {
+          DOMCacheGetOrSet('hypercube8Bonus').innerHTML = i18next.t(
+            'wowCubes.hypercubes.items.8',
+            {
+              amount: format(hypercubeArray[i], 0, true),
+              bonus: format(
+                Math.log10(1 + player.hypercubeBlessings.antELO),
+                accuracy[i]! + augmentAccuracy,
+                true
+              )
+            }
+          )
+          continue
         }
         DOMCacheGetOrSet(`hypercube${i}Bonus`).innerHTML = i18next.t(
           `wowCubes.hypercubes.items.${i}`,

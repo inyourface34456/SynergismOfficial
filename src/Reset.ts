@@ -15,8 +15,7 @@ import {
   calculateObtainium,
   calculateOfferings,
   calculatePowderConversion,
-  calculateRuneLevels,
-  calculateTalismanEffects
+  calculateRuneLevels
 } from './Calculate'
 import {
   campaignCorruptionStatsHTMLReset,
@@ -49,7 +48,7 @@ import { forceResetShopUpgrades, shopData } from './Shop'
 import { calculateSingularityDebuff, getFastForwardTotalMultiplier } from './singularity'
 import { blankSave, deepClone, format, player, saveSynergy, updateAll, updateEffectiveLevelMult } from './Synergism'
 import { changeSubTab, changeTab, Tabs } from './Tabs'
-import { updateTalismanAppearance, updateTalismanInventory } from './Talismans'
+import { resetTalismans, updateAllTalismanHTML, updateTalismanInventory } from './Talismans'
 import { calculateTesseractBlessings } from './Tesseracts'
 import { IconSets } from './Themes'
 import { clearInterval, setInterval } from './Timers'
@@ -701,7 +700,6 @@ export const reset = (input: resetNames, fast = false, from = 'unknown') => {
     calculateAnts()
     calculateRuneLevels()
     calculateAntSacrificeELO()
-    calculateTalismanEffects()
     calculateObtainium()
     ascensionAchievementCheck(1)
 
@@ -709,14 +707,8 @@ export const reset = (input: resetNames, fast = false, from = 'unknown') => {
     player.ascensionCounterReal = 0
     player.ascensionCounterRealReal = 0
 
+    updateAllTalismanHTML()
     updateTalismanInventory()
-    updateTalismanAppearance(0)
-    updateTalismanAppearance(1)
-    updateTalismanAppearance(2)
-    updateTalismanAppearance(3)
-    updateTalismanAppearance(4)
-    updateTalismanAppearance(5)
-    updateTalismanAppearance(6)
     calculateCubeBlessings()
     calculateTesseractBlessings()
     calculateHypercubeBlessings()
@@ -1296,13 +1288,6 @@ export const singularity = (setSingNumber = -1) => {
   hold.prestigeamount = player.prestigeamount
   hold.transcendamount = player.transcendamount
   hold.reincarnationamount = player.reincarnationamount
-  hold.talismanOne = player.talismanOne
-  hold.talismanTwo = player.talismanTwo
-  hold.talismanThree = player.talismanThree
-  hold.talismanFour = player.talismanFour
-  hold.talismanFive = player.talismanFive
-  hold.talismanSix = player.talismanSix
-  hold.talismanSeven = player.talismanSeven
   hold.buyTalismanShardPercent = player.buyTalismanShardPercent
   hold.antMax = player.antMax
   hold.autoAntSacrifice = player.autoAntSacrifice
@@ -1601,17 +1586,4 @@ const resetResearches = () => {
   for (const item of getResetResearches()) {
     player.researches[item] = 0
   }
-}
-
-const resetTalismans = () => {
-  player.talismanLevels = [0, 0, 0, 0, 0, 0, 0]
-  player.talismanRarity = [1, 1, 1, 1, 1, 1, 1]
-
-  player.talismanShards = 0
-  player.commonFragments = 0
-  player.uncommonFragments = 0
-  player.rareFragments = 0
-  player.epicFragments = 0
-  player.legendaryFragments = 0
-  player.mythicalFragments = 0
 }

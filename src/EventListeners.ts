@@ -74,16 +74,8 @@ import { player, resetCheck, saveSynergy } from './Synergism'
 import { changeSubTab, changeTab, Tabs } from './Tabs'
 import {
   buyAllTalismanResources,
-  buyTalismanEnhance,
-  buyTalismanLevels,
   buyTalismanResources,
-  changeTalismanModifier,
-  respecTalismanCancel,
-  respecTalismanConfirm,
-  showEnhanceTalismanPrices,
-  showRespecInformation,
-  showTalismanEffect,
-  showTalismanPrices,
+  getTalisman,
   toggleTalismanBuy,
   updateTalismanCostDisplay
 } from './Talismans'
@@ -466,33 +458,37 @@ export const generateEventHandlers = () => {
   buyTalismanAll.addEventListener('focus', () => updateTalismanCostDisplay(null))
   buyTalismanAll.addEventListener('click', () => buyAllTalismanResources())
 
-  for (let index = 0; index < 7; index++) {
-    DOMCacheGetOrSet(`talisman${index + 1}`).addEventListener('click', () => showTalismanEffect(index))
-
-    const levelTalisman = DOMCacheGetOrSet(`leveluptalisman${index + 1}`)
-    levelTalisman.addEventListener('mouseover', () => showTalismanPrices(index))
-    levelTalisman.addEventListener('focus', () => showTalismanPrices(index))
-    levelTalisman.addEventListener('click', () => buyTalismanLevels(index))
-
-    const enhanceTalisman = DOMCacheGetOrSet(`enhancetalisman${index + 1}`)
-    enhanceTalisman.addEventListener('mouseover', () => showEnhanceTalismanPrices(index))
-    enhanceTalisman.addEventListener('focus', () => showEnhanceTalismanPrices(index))
-    enhanceTalisman.addEventListener('click', () => buyTalismanEnhance(index))
-
-    DOMCacheGetOrSet(`respectalisman${index + 1}`).addEventListener(
-      'click',
-      () => showRespecInformation(index)
+  const talismanStats = Object.keys(
+    player.talismans
+  ) as (keyof Player['talismans'])[]
+  for (const key of talismanStats) {
+    DOMCacheGetOrSet(`${key}Talisman`).addEventListener(
+      'mouseover',
+      () => getTalisman(key).updateRewardHTML()
     )
-  }
-
-  DOMCacheGetOrSet('respecAllTalismans').addEventListener('click', () => showRespecInformation(7))
-  DOMCacheGetOrSet('confirmTalismanRespec').addEventListener('click', () => respecTalismanConfirm(G.talismanRespec))
-  DOMCacheGetOrSet('cancelTalismanRespec').addEventListener('click', () => respecTalismanCancel(G.talismanRespec))
-
-  for (let index = 0; index < 5; index++) {
-    DOMCacheGetOrSet(`talismanRespecButton${index + 1}`).addEventListener(
+    DOMCacheGetOrSet(`level${key}Once`).addEventListener(
       'click',
-      () => changeTalismanModifier(index + 1)
+      () => getTalisman(key).buyTalismanLevel()
+    )
+    DOMCacheGetOrSet(`level${key}Once`).addEventListener(
+      'mouseover',
+      () => getTalisman(key).updateCostHTML()
+    )
+    DOMCacheGetOrSet(`level${key}ToRarityIncrease`).addEventListener(
+      'click',
+      () => getTalisman(key).buyLevelToRarityIncrease()
+    )
+    DOMCacheGetOrSet(`level${key}ToRarityIncrease`).addEventListener(
+      'mouseover',
+      () => getTalisman(key).updateCostHTML()
+    )
+    DOMCacheGetOrSet(`level${key}ToMax`).addEventListener(
+      'click',
+      () => getTalisman(key).buyLevelToMax()
+    )
+    DOMCacheGetOrSet(`level${key}ToMax`).addEventListener(
+      'mouseover',
+      () => getTalisman(key).updateCostHTML()
     )
   }
 

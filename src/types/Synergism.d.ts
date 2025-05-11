@@ -13,6 +13,7 @@ import type { RedAmbrosiaKeys } from '../RedAmbrosiaUpgrades'
 import type { SingularityUpgrade } from '../singularity'
 import type { SingularityChallenge, singularityChallengeData } from '../SingularityChallenges'
 import type { Tabs } from '../Tabs'
+import type { TalismanCraftItems, TalismanKeys } from '../Talismans'
 
 type ArrayStartingWithNull<T> = [null, ...T[]]
 
@@ -440,15 +441,8 @@ export interface Player {
   antSacrificeTimer: number
   antSacrificeTimerReal: number
 
-  talismanLevels: number[]
-  talismanRarity: number[]
-  talismanOne: ArrayStartingWithNull<number>
-  talismanTwo: ArrayStartingWithNull<number>
-  talismanThree: ArrayStartingWithNull<number>
-  talismanFour: ArrayStartingWithNull<number>
-  talismanFive: ArrayStartingWithNull<number>
-  talismanSix: ArrayStartingWithNull<number>
-  talismanSeven: ArrayStartingWithNull<number>
+  talismans: Record<TalismanKeys, Record<TalismanCraftItems, number>>
+
   talismanShards: number
   commonFragments: number
   uncommonFragments: number

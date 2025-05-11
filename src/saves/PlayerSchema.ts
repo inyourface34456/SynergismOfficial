@@ -10,6 +10,7 @@ import { QuarkHandler } from '../Quark'
 import { singularityData, SingularityUpgrade } from '../singularity'
 import { SingularityChallenge, singularityChallengeData } from '../SingularityChallenges'
 import { blankSave, deepClone } from '../Synergism'
+import { noTalismanFragments } from '../Talismans'
 import type { Player } from '../types/Synergism'
 import { padArray } from '../Utility'
 
@@ -91,6 +92,16 @@ const optionalCorruptionSchema = z.object({
   recession: z.number().optional().default(0),
   dilation: z.number().optional().default(0),
   hyperchallenge: z.number().optional().default(0)
+})
+
+const talismanFragmentSchema = z.object({
+  shard: z.number().default(0),
+  commonFragment: z.number().default(0),
+  uncommonFragment: z.number().default(0),
+  rareFragment: z.number().default(0),
+  epicFragment: z.number().default(0),
+  legendaryFragment: z.number().default(0),
+  mythicalFragment: z.number().default(0)
 })
 
 export const playerCorruptionSchema = z.object({
@@ -463,23 +474,32 @@ export const playerSchema = z.object({
   antSacrificeTimer: z.number().default(() => blankSave.antSacrificeTimer),
   antSacrificeTimerReal: z.number().default(() => blankSave.antSacrificeTimerReal),
 
+  talismans: z.record(z.string(), talismanFragmentSchema)
+    .transform((object) => {
+      return Object.fromEntries(
+        Object.keys(blankSave.talismans).map((key) => {
+          const value = object[key] ?? noTalismanFragments
+          return value === null ? [key, noTalismanFragments] : [key, value]
+        })
+      )
+    })
+    .default(() => ({ ...blankSave.talismans })),
+
   talismanLevels: z.union([
     z.number().array(),
     arrayStartingWithNull(z.number()).transform((array) => array.slice(1))
-  ])
-    .default(() => [...blankSave.talismanLevels]),
+  ]).optional(),
   talismanRarity: z.union([
     z.number().array(),
     arrayStartingWithNull(z.number()).transform((array) => array.slice(1))
-  ])
-    .default(() => [...blankSave.talismanRarity]),
-  talismanOne: arrayStartingWithNull(z.number()).default(() => blankSave.talismanOne),
-  talismanTwo: arrayStartingWithNull(z.number()).default(() => blankSave.talismanTwo),
-  talismanThree: arrayStartingWithNull(z.number()).default(() => blankSave.talismanThree),
-  talismanFour: arrayStartingWithNull(z.number()).default(() => blankSave.talismanFour),
-  talismanFive: arrayStartingWithNull(z.number()).default(() => blankSave.talismanFive),
-  talismanSix: arrayStartingWithNull(z.number()).default(() => blankSave.talismanSix),
-  talismanSeven: arrayStartingWithNull(z.number()).default(() => blankSave.talismanSeven),
+  ]).optional(),
+  talismanOne: arrayStartingWithNull(z.number()).optional(),
+  talismanTwo: arrayStartingWithNull(z.number()).optional(),
+  talismanThree: arrayStartingWithNull(z.number()).optional(),
+  talismanFour: arrayStartingWithNull(z.number()).optional(),
+  talismanFive: arrayStartingWithNull(z.number()).optional(),
+  talismanSix: arrayStartingWithNull(z.number()).optional(),
+  talismanSeven: arrayStartingWithNull(z.number()).optional(),
   talismanShards: z.number().default(() => blankSave.talismanShards),
   commonFragments: z.number().default(() => blankSave.commonFragments),
   uncommonFragments: z.number().default(() => blankSave.uncommonFragments),

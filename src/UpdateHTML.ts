@@ -205,16 +205,16 @@ export const revealStuff = () => {
   }
 
   player.achievements[119] === 1 // Tax+ Challenge Achievement 7
-    ? DOMCacheGetOrSet('talisman1area').style.display = 'flex'
-    : DOMCacheGetOrSet('talisman1area').style.display = 'none'
+    ? DOMCacheGetOrSet('exemptionTalismanContainer').style.display = 'flex'
+    : DOMCacheGetOrSet('exemptionTalismanContainer').style.display = 'none'
 
   player.achievements[126] === 1 // No MA Challenge Achievement 7
-    ? DOMCacheGetOrSet('talisman2area').style.display = 'flex'
-    : DOMCacheGetOrSet('talisman2area').style.display = 'none'
+    ? DOMCacheGetOrSet('chronosTalismanContainer').style.display = 'flex'
+    : DOMCacheGetOrSet('chronosTalismanContainer').style.display = 'none'
 
   player.achievements[133] === 1 // Cost++ Challenge Achievement 7
-    ? DOMCacheGetOrSet('talisman3area').style.display = 'flex'
-    : DOMCacheGetOrSet('talisman3area').style.display = 'none'
+    ? DOMCacheGetOrSet('midasTalismanContainer').style.display = 'flex'
+    : DOMCacheGetOrSet('midasTalismanContainer').style.display = 'none'
 
   if (player.achievements[134] === 1) { // No Runes Challenge Achievement 1
     DOMCacheGetOrSet('toggleRuneSubTab2').style.display = 'block'
@@ -225,12 +225,12 @@ export const revealStuff = () => {
   }
 
   player.achievements[140] === 1 // No Runes Challenge Achievement 7
-    ? DOMCacheGetOrSet('talisman4area').style.display = 'flex'
-    : DOMCacheGetOrSet('talisman4area').style.display = 'none'
+    ? DOMCacheGetOrSet('metaphysicsTalismanContainer').style.display = 'flex'
+    : DOMCacheGetOrSet('metaphysicsTalismanContainer').style.display = 'none'
 
   player.achievements[147] === 1 // Sadistic Challenge Achievement 7
-    ? DOMCacheGetOrSet('talisman5area').style.display = 'flex'
-    : DOMCacheGetOrSet('talisman5area').style.display = 'none'
+    ? DOMCacheGetOrSet('polymathTalismanContainer').style.display = 'flex'
+    : DOMCacheGetOrSet('polymathTalismanContainer').style.display = 'none'
 
   player.achievements[173] === 1 // Galactic Crumb Achievement 5
     ? DOMCacheGetOrSet('sacrificeAnts').style.display = 'block'
@@ -294,8 +294,8 @@ export const revealStuff = () => {
     ? DOMCacheGetOrSet('autotessbuyeramount').style.display = 'block'
     : DOMCacheGetOrSet('autotessbuyeramount').style.display = 'none'
   ;(player.antUpgrades[11]! > 0 || player.ascensionCount > 0) // Ant Talisman Unlock, Mortuus
-    ? DOMCacheGetOrSet('talisman6area').style.display = 'flex'
-    : DOMCacheGetOrSet('talisman6area').style.display = 'none'
+    ? DOMCacheGetOrSet('mortuusTalismanContainer').style.display = 'flex'
+    : DOMCacheGetOrSet('mortuusTalismanContainer').style.display = 'none'
 
   player.shopUpgrades.offeringAuto > 0 // Auto Offering Shop Purchase
     ? DOMCacheGetOrSet('toggleautosacrifice').style.display = 'block'
@@ -315,8 +315,8 @@ export const revealStuff = () => {
       : 'none'
 
   isShopTalismanUnlocked() // Plastic Talisman Shop Purchase
-    ? DOMCacheGetOrSet('talisman7area').style.display = 'flex'
-    : DOMCacheGetOrSet('talisman7area').style.display = 'none'
+    ? DOMCacheGetOrSet('plasticTalismanContainer').style.display = 'flex'
+    : DOMCacheGetOrSet('plasticTalismanContainer').style.display = 'none'
 
   player.cubeUpgrades[8] > 0
     ? DOMCacheGetOrSet('reincarnateAutoUpgrade').style.display = 'block'

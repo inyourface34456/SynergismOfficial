@@ -1,16 +1,19 @@
 import i18next from 'i18next'
 import { achievementaward } from './Achievements'
 import { DOMCacheGetOrSet } from './Cache/DOM'
-import { calculateRuneLevels } from './Calculate'
+import { formatAsPercentIncrease } from './Campaign'
 import { CalcECC } from './Challenges'
 import { PCoinUpgradeEffects } from './PseudoCoinUpgrades'
 import { format, player } from './Synergism'
-import { Globals as G } from './Variables'
+import { sumContents } from './Utility'
 
 interface TalismanFragmentCost {
   obtainium: number
   offerings: number
 }
+
+// TEMPORARY: Eventually, we want to do something similar to runes
+export type Runes = 'speed' | 'duplication' | 'prism' | 'thrift' | 'SI' | 'IA'
 
 export type TalismanCraftItems =
   | 'shard'
@@ -52,9 +55,11 @@ const talismanResourceCosts: Record<TalismanCraftItems, TalismanFragmentCost> = 
   }
 }
 
+export type TalismanRuneBonus = Record<Runes, number>
+
 interface BaseReward {
-  desc: string
-  runeBonus: number
+  inscriptionDesc: string
+  signatureDesc: string
 }
 
 interface ExemptionReward extends BaseReward {
@@ -107,6 +112,16 @@ export const noTalismanFragments: Record<TalismanCraftItems, number> = {
   mythicalFragment: 0
 }
 
+const rarityValues: Record<number, number> = {
+  1: 1,
+  2: 1.2,
+  3: 1.5,
+  4: 1.8,
+  5: 2.1,
+  6: 2.5,
+  7: 3
+}
+
 interface TalismanData<K extends TalismanKeys> {
   // Fields supplied by data object
   baseMult: number
@@ -114,6 +129,8 @@ interface TalismanData<K extends TalismanKeys> {
   costs: (this: void, baseMult: number, level: number) => Record<TalismanCraftItems, number>
   levelCapIncrease: () => number
   rewards(this: void, n: number): TalismanTypeMap[K]
+
+  talismanBaseCoefficient: TalismanRuneBonus
 
   // Field that is stored in the player
   fragmentsInvested?: Record<TalismanCraftItems, number>
@@ -128,14 +145,16 @@ export class Talisman<K extends TalismanKeys> {
   readonly baseMult: number
   readonly maxLevel: number
   readonly rewards: (n: number) => TalismanTypeMap[K]
+
+  readonly talismanBaseCoefficient: TalismanRuneBonus
   public _level = 0
   #key: K
 
   public fragmentsInvested = noTalismanFragments
 
-  constructor (data: TalismanData<K>, key: K, prevLevel?: number) {
+  constructor (data: TalismanData<K>, key: K) {
     this.name = i18next.t(`runes.talismans.${key}.name`)
-    this.description = i18next.t(`runes.talismans.${key}.name`)
+    this.description = i18next.t(`runes.talismans.${key}.description`)
     this.#key = key
 
     this.costs = data.costs
@@ -143,13 +162,11 @@ export class Talisman<K extends TalismanKeys> {
     this.baseMult = data.baseMult
     this.maxLevel = data.maxLevel
     this.rewards = data.rewards
+    this.talismanBaseCoefficient = data.talismanBaseCoefficient
 
     this.fragmentsInvested = data.fragmentsInvested ?? noTalismanFragments
     this.updateLevelAndSpentFromInvested()
-
-    if (prevLevel !== undefined) {
-      this.updateResourcePredefinedLevel(prevLevel)
-    }
+    this.updateTalismanDisplay()
   }
 
   get costTNL () {
@@ -170,12 +187,12 @@ export class Talisman<K extends TalismanKeys> {
 
   // From 1 to 7 with linear scaling, unaffected by level cap increasers
   get rarity () {
-    return 1 + Math.floor(6 * Math.min(1, this.level / this.maxLevel))
+    return 1 + Math.min(6, Math.floor(6 * this.level / this.maxLevel))
   }
 
   get levelsUntilRarityIncrease () {
     if (this.level >= this.maxLevel) {
-      return 0
+      return this.effectiveLevelCap - this.level
     } else {
       const currentRarity = this.rarity
       const levelReq = Math.ceil(this.maxLevel * currentRarity / 6)
@@ -196,7 +213,7 @@ export class Talisman<K extends TalismanKeys> {
 
   updateLevelAndSpentFromInvested (): void {
     let level = 0
-    const budget = this.fragmentsInvested
+    const budget = { ...this.fragmentsInvested }
 
     let nextCost = this.costs(this.baseMult, level)
 
@@ -220,7 +237,7 @@ export class Talisman<K extends TalismanKeys> {
 
   updateResourcePredefinedLevel (level: number): void {
     this.level = Math.min(level, this.effectiveLevelCap)
-    this.fragmentsInvested = noTalismanFragments
+    this.fragmentsInvested = { ...noTalismanFragments }
 
     for (let n = 0; n < this.level; n++) {
       const nextCost = this.costs(this.baseMult, n)
@@ -228,11 +245,12 @@ export class Talisman<K extends TalismanKeys> {
         this.fragmentsInvested[item as TalismanCraftItems] += nextCost[item as TalismanCraftItems]
       }
     }
+
+    this.updatePlayerData()
   }
 
-  buyTalismanLevel (): void {
-    const costs = this.costs(this.baseMult, this.level)
-    const budget = {
+  constructBudget (): Record<TalismanCraftItems, number> {
+    return {
       shard: player.talismanShards,
       commonFragment: player.commonFragments,
       uncommonFragment: player.uncommonFragments,
@@ -241,6 +259,11 @@ export class Talisman<K extends TalismanKeys> {
       legendaryFragment: player.legendaryFragments,
       mythicalFragment: player.mythicalFragments
     }
+  }
+
+  buyTalismanLevel (multiBuy = false): void {
+    const costs = this.costs(this.baseMult, this.level)
+    const budget = this.constructBudget()
     const canAffordNextLevel = this.affordableNextLevel(budget)
 
     if (canAffordNextLevel) {
@@ -258,40 +281,257 @@ export class Talisman<K extends TalismanKeys> {
 
       this.level += 1
     }
+
+    if (!multiBuy) {
+      this.updateCostHTML()
+      this.updateTalismanDisplay()
+      this.updatePlayerData()
+    }
   }
 
-  buyLevelToRarityIncrease (): void {
+  buyLevelToRarityIncrease (auto = false): void {
     const levelsToBuy = this.levelsUntilRarityIncrease
     if (levelsToBuy > 0) {
       for (let i = 0; i < levelsToBuy; i++) {
-        if (!this.affordableNextLevel(this.fragmentsInvested)) {
+        const budget = this.constructBudget()
+        if (!this.affordableNextLevel(budget)) {
           break
         }
-        this.buyTalismanLevel()
+        this.buyTalismanLevel(true)
       }
     }
+
+    if (!auto) {
+      this.updateCostHTML()
+    }
+    this.updateTalismanDisplay()
+    this.updatePlayerData()
   }
 
   buyLevelToMax (): void {
     const levelsToBuy = this.effectiveLevelCap - this.level
     if (levelsToBuy > 0) {
       for (let i = 0; i < levelsToBuy; i++) {
-        if (!this.affordableNextLevel(this.fragmentsInvested)) {
+        const budget = this.constructBudget()
+        if (!this.affordableNextLevel(budget)) {
           break
         }
         this.buyTalismanLevel()
       }
     }
-  }
 
-  public get rewardDesc (): string {
-    const effectiveLevel = this.level
-    return this.rewards(effectiveLevel).desc
+    this.updateCostHTML()
+    this.updateTalismanDisplay()
+    this.updatePlayerData()
   }
 
   public get bonus () {
-    const effectiveLevel = this.level
-    return this.rewards(effectiveLevel)
+    return this.rewards(this.rarity)
+  }
+
+  public get inscriptionDesc (): string {
+    return this.bonus.inscriptionDesc
+  }
+
+  public get signatureDesc (): string {
+    return this.bonus.signatureDesc
+  }
+
+  public get runeBonuses (): TalismanRuneBonus {
+    const rarityValue = rarityValues[this.rarity] ?? 1
+    let specialMultiplier = 1
+
+    if (this.#key === 'metaphysics') {
+      specialMultiplier += (this.bonus as MetaphysicsReward).talismanEffect
+    }
+
+    if (player.achievements[135] === 1) {
+      specialMultiplier += 0.02
+    }
+    if (player.achievements[136] === 1) {
+      specialMultiplier += 0.02
+    }
+
+    specialMultiplier += player.researches[106] / 1000
+    specialMultiplier += player.researches[107] / 1000
+    specialMultiplier += player.researches[116] / 1000
+    specialMultiplier += player.researches[117] / 1000
+    specialMultiplier += 2 * player.researches[118] / 1000
+    specialMultiplier += 0.004 * Math.floor(player.researches[200] / 10000)
+    specialMultiplier += 0.006 * Math.floor(player.cubeUpgrades[50] / 10000)
+
+    return {
+      speed: this.talismanBaseCoefficient.speed * rarityValue * this.level * specialMultiplier,
+      duplication: this.talismanBaseCoefficient.duplication * rarityValue * this.level * specialMultiplier,
+      prism: this.talismanBaseCoefficient.prism * rarityValue * this.level * specialMultiplier,
+      thrift: this.talismanBaseCoefficient.thrift * rarityValue * this.level * specialMultiplier,
+      SI: this.talismanBaseCoefficient.SI * rarityValue * this.level * specialMultiplier,
+      IA: this.talismanBaseCoefficient.IA * rarityValue * this.level * specialMultiplier
+    }
+  }
+
+  updateRewardHTML () {
+    DOMCacheGetOrSet('talismanlevelup').style.display = 'none'
+    DOMCacheGetOrSet('talismanEffect').style.display = 'block'
+    DOMCacheGetOrSet('talismanrespec').style.display = 'none'
+
+    DOMCacheGetOrSet('talismanTitle').innerHTML = `${this.name} - ${i18next.t(`runes.talismans.rarity.${this.rarity}`)}`
+    DOMCacheGetOrSet('talismanDescription').innerHTML = this.description
+
+    const speedHTML = DOMCacheGetOrSet('talismanSpeedEffect')
+    const duplicationHTML = DOMCacheGetOrSet('talismanDupeEffect')
+    const prismHTML = DOMCacheGetOrSet('talismanPrismEffect')
+    const thriftHTML = DOMCacheGetOrSet('talismanThriftEffect')
+    const sIHTML = DOMCacheGetOrSet('talismanSIEffect')
+    const iAHTML = DOMCacheGetOrSet('talismanIAEffect')
+
+    const inscriptionHTML = DOMCacheGetOrSet('talismanInscriptionBonus')
+    const signatureHTML = DOMCacheGetOrSet('talismanSignatureBonus')
+
+    inscriptionHTML.innerHTML = this.inscriptionDesc
+    console.log(this.runeBonuses)
+
+    this.rarity >= 6
+      ? (() => {
+        signatureHTML.style.display = 'block'
+        signatureHTML.innerHTML = this.signatureDesc
+      })()
+      : (() => {
+        signatureHTML.style.display = 'none'
+      })()
+
+    this.runeBonuses.speed > 0
+      ? (() => {
+        speedHTML.style.display = 'block'
+        speedHTML.innerHTML = i18next.t('runes.talismans.bonusRuneLevels.speed', {
+          x: format(this.runeBonuses.speed, 0, true)
+        })
+      })()
+      : (() => {
+        DOMCacheGetOrSet('talismanSpeedEffect').style.display = 'none'
+      })()
+    this.runeBonuses.duplication > 0
+      ? (() => {
+        duplicationHTML.style.display = 'block'
+        duplicationHTML.innerHTML = i18next.t('runes.talismans.bonusRuneLevels.duplication', {
+          x: format(this.runeBonuses.duplication, 0, true)
+        })
+      })()
+      : (() => {
+        DOMCacheGetOrSet('talismanDupeEffect').style.display = 'none'
+      })()
+    this.runeBonuses.prism > 0
+      ? (() => {
+        prismHTML.style.display = 'block'
+        prismHTML.innerHTML = i18next.t('runes.talismans.bonusRuneLevels.prism', {
+          x: format(this.runeBonuses.prism, 0, true)
+        })
+      })()
+      : (() => {
+        DOMCacheGetOrSet('talismanPrismEffect').style.display = 'none'
+      })()
+    this.runeBonuses.thrift > 0
+      ? (() => {
+        thriftHTML.style.display = 'block'
+        thriftHTML.innerHTML = i18next.t('runes.talismans.bonusRuneLevels.thrift', {
+          x: format(this.runeBonuses.thrift, 0, true)
+        })
+      })()
+      : (() => {
+        DOMCacheGetOrSet('talismanThriftEffect').style.display = 'none'
+      })()
+    this.runeBonuses.SI > 0
+      ? (() => {
+        sIHTML.style.display = 'block'
+        sIHTML.innerHTML = i18next.t('runes.talismans.bonusRuneLevels.SI', {
+          x: format(this.runeBonuses.SI, 0, true)
+        })
+      })()
+      : (() => {
+        DOMCacheGetOrSet('talismanSIEffect').style.display = 'none'
+      })()
+    this.runeBonuses.IA > 0
+      ? (() => {
+        iAHTML.style.display = 'block'
+        iAHTML.innerHTML = i18next.t('runes.talismans.bonusRuneLevels.IA', {
+          x: format(this.runeBonuses.IA, 2, true)
+        })
+      })()
+      : (() => {
+        DOMCacheGetOrSet('talismanIAEffect').style.display = 'none'
+      })()
+  }
+
+  updateCostHTML () {
+    DOMCacheGetOrSet('talismanEffect').style.display = 'none'
+    DOMCacheGetOrSet('talismanlevelup').style.display = 'block'
+    DOMCacheGetOrSet('talismanrespec').style.display = 'none'
+    const a = DOMCacheGetOrSet('talismanShardCost')
+    const b = DOMCacheGetOrSet('talismanCommonFragmentCost')
+    const c = DOMCacheGetOrSet('talismanUncommonFragmentCost')
+    const d = DOMCacheGetOrSet('talismanRareFragmentCost')
+    const e = DOMCacheGetOrSet('talismanEpicFragmentCost')
+    const f = DOMCacheGetOrSet('talismanLegendaryFragmentCost')
+    const g = DOMCacheGetOrSet('talismanMythicalFragmentCost')
+
+    DOMCacheGetOrSet('talismanLevelUpSummary').textContent = i18next.t('runes.resourcesToLevelup')
+    DOMCacheGetOrSet('talismanLevelUpSummary').style.color = 'silver'
+
+    const nextCost = this.costTNL
+    a.textContent = format(nextCost.shard, 0, false)
+    b.textContent = format(nextCost.commonFragment, 0, false)
+    c.textContent = format(nextCost.uncommonFragment, 0, false)
+    d.textContent = format(nextCost.rareFragment, 0, false)
+    e.textContent = format(nextCost.epicFragment, 0, false)
+    f.textContent = format(nextCost.legendaryFragment, 0, false)
+    g.textContent = format(nextCost.mythicalFragment, 0, false)
+  }
+
+  updateTalismanDisplay () {
+    const el = DOMCacheGetOrSet(`${this.#key}Talisman`)
+    const la = DOMCacheGetOrSet(`${this.#key}TalismanLevel`)
+
+    la.textContent = `${this.level}/${this.effectiveLevelCap}`
+    const rarity = this.rarity
+    if (rarity === 1) {
+      el.style.border = '4px solid white'
+      la.style.color = 'white'
+    }
+    if (rarity === 2) {
+      el.style.border = '4px solid limegreen'
+      la.style.color = 'limegreen'
+    }
+    if (rarity === 3) {
+      el.style.border = '4px solid lightblue'
+      la.style.color = 'lightblue'
+    }
+    if (rarity === 4) {
+      el.style.border = '4px solid plum'
+      la.style.color = 'plum'
+    }
+    if (rarity === 5) {
+      el.style.border = '4px solid orange'
+      la.style.color = 'orange'
+    }
+    if (rarity === 6) {
+      el.style.border = '4px solid crimson'
+      la.style.color = 'var(--crimson-text-color)'
+    }
+    if (rarity === 7) {
+      el.style.border = '4px solid cyan'
+      la.style.color = 'cyan'
+    }
+  }
+
+  resetTalisman () {
+    this.level = 0
+    this.fragmentsInvested = noTalismanFragments
+    this.updatePlayerData()
+  }
+
+  // We need only store this! Wow!
+  updatePlayerData () {
+    player.talismans[this.#key] = { ...this.fragmentsInvested }
   }
 }
 
@@ -318,7 +558,7 @@ const regularCostProgression = (baseMult: number, level: number): Record<Talisma
   }
 }
 
-const exponentialCostProgression = (baseMult: number, level: number): Record<TalismanCraftItems, number> => {
+/*const exponentialCostProgression = (baseMult: number, level: number): Record<TalismanCraftItems, number> => {
   return {
     shard: Math.floor(baseMult * Math.pow(1.12, level) * 100),
     commonFragment: level >= 30 ? Math.floor(baseMult * Math.pow(1.12, level - 30) * 50) : 0,
@@ -328,24 +568,345 @@ const exponentialCostProgression = (baseMult: number, level: number): Record<Tal
     legendaryFragment: level >= 150 ? Math.floor(baseMult * Math.pow(1.12, level - 150) * 10) : 0,
     mythicalFragment: level >= 150 ? Math.floor(baseMult * Math.pow(1.12, level - 150) * 5) : 0
   }
+}*/
+
+export const universalTalismanMaxLevelIncreasers = () => {
+  return sumContents([
+    6 * CalcECC('ascension', player.challengecompletions[13]),
+    Math.floor(player.researches[200] / 400)
+  ])
 }
 
-const num = ['One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven'] as const
+export const metaphysicsTalismanMaxLevelIncreasers = () => {
+  return player.cubeUpgrades[67] > 0 ? 1337 : 0
+}
 
-export const calculateMaxTalismanLevel = (i: number) => {
-  let maxLevel = 30 * player.talismanRarity[i]
-  maxLevel += 6 * CalcECC('ascension', player.challengecompletions[13])
-  maxLevel += Math.floor(player.researches[200] / 400)
+export const plasticTalismanMaxLevelIncreasers = () => {
+  return PCoinUpgradeEffects.INSTANT_UNLOCK_1 ? 10 : 0
+}
 
-  if (i === 6) {
-    maxLevel += PCoinUpgradeEffects.INSTANT_UNLOCK_1 ? 10 : 0
+const talismanData: { [K in TalismanKeys]: TalismanData<K> } = {
+  exemption: {
+    baseMult: 1,
+    maxLevel: 180,
+    costs: regularCostProgression,
+    levelCapIncrease: () => universalTalismanMaxLevelIncreasers(),
+    rewards: (n) => {
+      // Corresponding to rarity, here
+      const inscriptValues = [0, -0.2, -0.3, -0.4, -0.45, -0.5, -0.55, -0.6]
+      return {
+        inscriptionDesc: i18next.t('runes.talismans.exemption.inscription', {
+          val: format(1 + (inscriptValues[n] ?? 1), 2, true)
+        }),
+        signatureDesc: i18next.t('runes.talismans.exemption.signature'),
+        taxReduction: inscriptValues[n] ?? 0
+      }
+    },
+    talismanBaseCoefficient: {
+      speed: 0,
+      duplication: 1.5,
+      prism: 0.75,
+      thrift: 0.75,
+      SI: 0,
+      IA: 0
+    }
+  },
+  chronos: {
+    baseMult: 4,
+    maxLevel: 180,
+    costs: regularCostProgression,
+    levelCapIncrease: () => universalTalismanMaxLevelIncreasers(),
+    rewards: (n) => {
+      const inscriptValues = [1, 1.05, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6]
+      return {
+        inscriptionDesc: i18next.t('runes.talismans.chronos.inscription', {
+          val: formatAsPercentIncrease(inscriptValues[n] ?? 1, 0)
+        }),
+        signatureDesc: i18next.t('runes.talismans.chronos.signature'),
+        globalSpeed: inscriptValues[n] ?? 1
+      }
+    },
+    talismanBaseCoefficient: {
+      speed: 1.5,
+      duplication: 0,
+      prism: 0,
+      thrift: 0.75,
+      SI: 0.75,
+      IA: 0
+    }
+  },
+  midas: {
+    baseMult: 1e4,
+    maxLevel: 180,
+    costs: regularCostProgression,
+    levelCapIncrease: () => universalTalismanMaxLevelIncreasers(),
+    rewards: (n) => {
+      const inscriptValues = [1, 1.2, 1.3, 1.4, 1.45, 1.5, 1.55, 1.6]
+      return {
+        inscriptionDesc: i18next.t('runes.talismans.midas.inscription', {
+          val: formatAsPercentIncrease(inscriptValues[n] ?? 1, 0)
+        }),
+        signatureDesc: i18next.t('runes.talismans.midas.signature'),
+        blessingBonus: inscriptValues[n] ?? 1
+      }
+    },
+    talismanBaseCoefficient: {
+      speed: 0,
+      duplication: 0.75,
+      prism: 0.75,
+      thrift: 1.5,
+      SI: 0,
+      IA: 0
+    }
+  },
+  metaphysics: {
+    baseMult: 1e8,
+    maxLevel: 180,
+    costs: regularCostProgression,
+    levelCapIncrease: () => {
+      return universalTalismanMaxLevelIncreasers() + metaphysicsTalismanMaxLevelIncreasers()
+    },
+    rewards: (n) => {
+      const inscriptValues = [0, 0.2, 0.4, 0.6, 0.7, 0.8, 0.9, 1.0]
+      return {
+        inscriptionDesc: i18next.t('runes.talismans.metaphysics.inscription', {
+          val: formatAsPercentIncrease(1 + (inscriptValues[n] ?? 0), 0)
+        }),
+        signatureDesc: i18next.t('runes.talismans.metaphysics.signature'),
+        talismanEffect: inscriptValues[n] ?? 1
+      }
+    },
+    talismanBaseCoefficient: {
+      speed: 0.6,
+      duplication: 0.6,
+      prism: 0.6,
+      thrift: 0.6,
+      SI: 0.6,
+      IA: 0
+    }
+  },
+  polymath: {
+    baseMult: 1e13,
+    maxLevel: 180,
+    costs: regularCostProgression,
+    levelCapIncrease: () => universalTalismanMaxLevelIncreasers(),
+    rewards: (n) => {
+      const inscriptValues = [1, 1.2, 1.4, 1.6, 1.7, 1.8, 1.9, 2]
+      return {
+        inscriptionDesc: i18next.t('runes.talismans.polymath.inscription', {
+          val: formatAsPercentIncrease(inscriptValues[n] ?? 1, 0)
+        }),
+        signatureDesc: i18next.t('runes.talismans.polymath.signature'),
+        spiritBonus: inscriptValues[n] ?? 1
+      }
+    },
+    talismanBaseCoefficient: {
+      speed: 0.75,
+      duplication: 0.75,
+      prism: 0,
+      thrift: 0,
+      SI: 1.5,
+      IA: 0
+    }
+  },
+  mortuus: {
+    baseMult: 10,
+    maxLevel: 180,
+    costs: regularCostProgression,
+    levelCapIncrease: () => universalTalismanMaxLevelIncreasers(),
+    rewards: (n) => {
+      const inscriptValues = [1, 1.02, 1.04, 1.06, 1.07, 1.08, 1.09, 1.10]
+      return {
+        inscriptionDesc: i18next.t('runes.talismans.mortuus.inscription', {
+          val: formatAsPercentIncrease(inscriptValues[n] ?? 1, 0)
+        }),
+        signatureDesc: i18next.t('runes.talismans.mortuus.signature'),
+        antBonus: inscriptValues[n] ?? 1
+      }
+    },
+    talismanBaseCoefficient: {
+      speed: 0.6,
+      duplication: 0.6,
+      prism: 0.6,
+      thrift: 0.6,
+      SI: 0.6,
+      IA: 0
+    }
+  },
+  plastic: {
+    baseMult: 100,
+    maxLevel: 180,
+    costs: regularCostProgression,
+    levelCapIncrease: () => {
+      return universalTalismanMaxLevelIncreasers() + plasticTalismanMaxLevelIncreasers()
+    },
+    rewards: (n) => {
+      const inscriptValues = [1, 1.005, 1.01, 1.015, 1.02, 1.025, 1.03, 1.04]
+      return {
+        inscriptionDesc: i18next.t('runes.talismans.plastic.inscription', {
+          val: formatAsPercentIncrease(inscriptValues[n] ?? 1, 0)
+        }),
+        signatureDesc: i18next.t('runes.talismans.plastic.signature'),
+        quarkBonus: inscriptValues[n] ?? 1
+      }
+    },
+    talismanBaseCoefficient: {
+      speed: 0.75,
+      duplication: 0,
+      prism: 1.5,
+      thrift: 0,
+      SI: 0.75,
+      IA: 0.005
+    }
   }
+}
 
-  if (player.cubeUpgrades[67] > 0 && i === 3) {
-    maxLevel += 1337
+// Create an object that is NOT on the player, but can be used (once initialized).
+export type TalismansMap = {
+  [K in TalismanKeys]: Talisman<K>
+}
+let talismans: TalismansMap | null = null
+
+export function initTalismans (investments: Record<TalismanKeys, Record<TalismanCraftItems, number>>) {
+  talismans = {} as TalismansMap
+  const keys = Object.keys(talismanData) as TalismanKeys[]
+
+  // Use type assertions after careful validation
+  for (const key of keys) {
+    const data = talismanData[key]
+    const invested = investments[key]
+
+    const dataWithInvestment = {
+      ...data,
+      fragmentsInvested: invested
+    }
+
+    // Use a function that casts the result appropriately
+    const upgrade = new Talisman(dataWithInvestment, key) // Here we need to use type assertion because TypeScript can't track
+    // the relationship between the key and the generic parameter in the loop
+    talismans[key as 'exemption'] = upgrade as Talisman<'exemption'>
   }
+}
 
-  return maxLevel
+export function getTalisman<K extends TalismanKeys> (key: K): Talisman<K> {
+  if (talismans === null) {
+    throw new Error('Talisman not initialized. Call initTalismans first.')
+  }
+  return talismans[key]
+}
+
+export const getTalismanBonus = (rune: Runes) => {
+  let totalBonus = 0
+  if (talismans === null) {
+    return 0
+  } else {
+    for (const talisman of Object.values(talismans)) {
+      totalBonus += talisman.runeBonuses[rune]
+    }
+  }
+  return totalBonus
+}
+
+export const resetTalismans = () => {
+  if (talismans === null) {
+    throw new Error('Talisman not initialized. Call initTalismans first.')
+  } else {
+    for (const talisman of Object.values(talismans)) {
+      talisman.resetTalisman()
+    }
+  }
+}
+
+export const sumOfTalismanRarities = () => {
+  if (talismans === null) {
+    throw new Error('Talisman not initialized. Call initTalismans first.')
+  } else {
+    let sum = 0
+    for (const talisman of Object.values(talismans)) {
+      sum += talisman.rarity
+    }
+    return sum
+  }
+}
+
+export const updateAllTalismanHTML = () => {
+  if (talismans === null) {
+    throw new Error('Talisman not initialized. Call initTalismans first.')
+  } else {
+    for (const talisman of Object.values(talismans)) {
+      talisman.updateTalismanDisplay()
+    }
+  }
+}
+
+export const generateTalismansHTML = () => {
+  const alreadyGenerated = document.getElementsByClassName('talismanContainer').length > 0
+  console.log(alreadyGenerated)
+  if (alreadyGenerated) {
+    return
+  } else {
+    const talismansContainer = DOMCacheGetOrSet('talismansContainerDiv')
+
+    for (const key of Object.keys(talismanData) as TalismanKeys[]) {
+      const talismansDiv = document.createElement('div')
+      talismansDiv.className = 'talismanContainer'
+      talismansDiv.id = `${key}TalismanContainer`
+
+      const talismansName = document.createElement('span')
+      talismansName.className = 'talismanName'
+      talismansName.setAttribute('i18n', `runes.talismans.names.${key}`)
+
+      talismansDiv.appendChild(talismansName)
+
+      const talismansIcon = document.createElement('img')
+      talismansIcon.className = 'talismanIcon'
+      talismansIcon.id = `${key}Talisman`
+      talismansIcon.alt = `${key} Talisman`
+      talismansIcon.src = `Pictures/Talismans/${key.charAt(0).toUpperCase() + key.slice(1)}.png`
+      talismansIcon.loading = 'lazy'
+
+      talismansDiv.appendChild(talismansIcon)
+
+      const talismansLevel = document.createElement('span')
+      talismansLevel.className = 'talismanLevel'
+      talismansLevel.id = `${key}TalismanLevel`
+      talismansLevel.textContent = 'Level 0/30'
+
+      talismansDiv.appendChild(talismansLevel)
+
+      const talismansLevelUpButton = document.createElement('button')
+      talismansLevelUpButton.className = 'talismanBtn'
+      talismansLevelUpButton.id = `level${key}Once`
+      talismansLevelUpButton.style.color = 'silver'
+      talismansLevelUpButton.style.border = '2px solid white'
+      talismansLevelUpButton.setAttribute('i18n', 'runes.talismans.fortify')
+      talismansLevelUpButton.textContent = i18next.t('runes.talismans.fortify')
+
+      talismansDiv.appendChild(talismansLevelUpButton)
+
+      const talismansLevelUpButton2 = document.createElement('button')
+      talismansLevelUpButton2.className = 'talismanBtn'
+      talismansLevelUpButton2.id = `level${key}ToRarityIncrease`
+      talismansLevelUpButton2.style.color = 'gold'
+      talismansLevelUpButton2.style.border = '2px solid orangered'
+      talismansLevelUpButton2.setAttribute('i18n', 'runes.talismans.enhance')
+      talismansLevelUpButton2.textContent = i18next.t('runes.talismans.enhance')
+
+      talismansDiv.appendChild(talismansLevelUpButton2)
+
+      const talismansLevelUpButton3 = document.createElement('button')
+      talismansLevelUpButton3.className = 'talismanBtn'
+      talismansLevelUpButton3.id = `level${key}ToMax`
+      talismansLevelUpButton3.style.color = 'plum'
+      talismansLevelUpButton3.style.border = '2px solid white'
+      talismansLevelUpButton3.setAttribute('i18n', 'runes.talismans.respec')
+      talismansLevelUpButton3.textContent = i18next.t('runes.talismans.respec')
+
+      talismansDiv.appendChild(talismansLevelUpButton3)
+
+      talismansContainer.appendChild(talismansDiv)
+    }
+  }
 }
 
 const getTalismanResourceInfo = (
@@ -468,420 +1029,4 @@ export const buyTalismanResources = (
   }
   updateTalismanCostDisplay(type, percentage)
   updateTalismanInventory()
-}
-
-export const showTalismanEffect = (i: number) => {
-  DOMCacheGetOrSet('talismanlevelup').style.display = 'none'
-  DOMCacheGetOrSet('talismanEffect').style.display = 'block'
-  DOMCacheGetOrSet('talismanrespec').style.display = 'none'
-  const a = DOMCacheGetOrSet('talismanSummary')
-  const b = DOMCacheGetOrSet('talismanBonus')
-  const c = DOMCacheGetOrSet('talismanRune1Effect')
-  const d = DOMCacheGetOrSet('talismanRune2Effect')
-  const e = DOMCacheGetOrSet('talismanRune3Effect')
-  const f = DOMCacheGetOrSet('talismanRune4Effect')
-  const g = DOMCacheGetOrSet('talismanRune5Effect')
-  const h = DOMCacheGetOrSet('talismanMythicEffect')
-
-  let talismanKey = ''
-  let effectValue = ''
-
-  switch (i) {
-    case 0:
-      talismanKey = 'exemption'
-      effectValue = format(10 * (player.talismanRarity[0] - 1))
-      break
-    case 1:
-      talismanKey = 'chronos'
-      effectValue = format(10 * (player.talismanRarity[1] - 1))
-      break
-    case 2:
-      talismanKey = 'midas'
-      effectValue = format(10 * (player.talismanRarity[2] - 1))
-      break
-    case 3:
-      talismanKey = 'metaphysics'
-      effectValue = format(0.02 * (player.talismanRarity[3] - 1), 2)
-      break
-    case 4:
-      talismanKey = 'polymath'
-      effectValue = format(1 * (player.talismanRarity[4] - 1))
-      break
-    case 5:
-      talismanKey = 'mortuus'
-      effectValue = format(2 * (player.talismanRarity[5] - 1))
-      break
-    case 6:
-      talismanKey = 'plastic'
-
-      break
-  }
-
-  const runeEffectName = `talisman${i + 1}Effect` as
-    | 'talisman1Effect'
-    | 'talisman2Effect'
-    | 'talisman3Effect'
-    | 'talisman4Effect'
-    | 'talisman5Effect'
-    | 'talisman6Effect'
-    | 'talisman7Effect'
-
-  a.textContent = i18next.t(`runes.talismans.summaries.${talismanKey}`)
-  b.textContent = i18next.t(`runes.talismans.effects.${talismanKey}`, { x: effectValue })
-  c.textContent = i18next.t('runes.talismans.bonusRuneLevels.speed', { x: format(G[runeEffectName][1], 2, true) })
-  d.textContent = i18next.t('runes.talismans.bonusRuneLevels.duplication', { x: format(G[runeEffectName][2], 2, true) })
-  e.textContent = i18next.t('runes.talismans.bonusRuneLevels.prism', { x: format(G[runeEffectName][3], 2, true) })
-  f.textContent = i18next.t('runes.talismans.bonusRuneLevels.thrift', { x: format(G[runeEffectName][4], 2, true) })
-  g.textContent = i18next.t('runes.talismans.bonusRuneLevels.SI', { x: format(G[runeEffectName][5], 2, true) })
-  h.textContent = i18next.t(`runes.talismans.mythicEffects.${talismanKey}`)
-
-  if (player.talismanRarity[i] !== 6) {
-    h.textContent = i18next.t('runes.talismans.maxEnhance')
-  }
-}
-
-export const showTalismanPrices = (i: number) => {
-  DOMCacheGetOrSet('talismanEffect').style.display = 'none'
-  DOMCacheGetOrSet('talismanlevelup').style.display = 'block'
-  DOMCacheGetOrSet('talismanrespec').style.display = 'none'
-  const a = DOMCacheGetOrSet('talismanShardCost')
-  const b = DOMCacheGetOrSet('talismanCommonFragmentCost')
-  const c = DOMCacheGetOrSet('talismanUncommonFragmentCost')
-  const d = DOMCacheGetOrSet('talismanRareFragmentCost')
-  const e = DOMCacheGetOrSet('talismanEpicFragmentCost')
-  const f = DOMCacheGetOrSet('talismanLegendaryFragmentCost')
-  const g = DOMCacheGetOrSet('talismanMythicalFragmentCost')
-
-  DOMCacheGetOrSet('talismanLevelUpSummary').textContent = i18next.t('runes.resourcesToLevelup')
-  DOMCacheGetOrSet('talismanLevelUpSummary').style.color = 'silver'
-
-  let m = G.talismanLevelCostMultiplier[i]
-  if (player.talismanLevels[i] >= 120) {
-    m *= (player.talismanLevels[i] - 90) / 30
-  }
-  if (player.talismanLevels[i] >= 150) {
-    m *= (player.talismanLevels[i] - 120) / 30
-  }
-  if (player.talismanLevels[i] >= 180) {
-    m *= (player.talismanLevels[i] - 170) / 10
-  }
-  a.textContent = format(m * Math.max(0, Math.floor(1 + 1 / 8 * Math.pow(player.talismanLevels[i], 3))))
-  b.textContent = format(m * Math.max(0, Math.floor(1 + 1 / 32 * Math.pow(player.talismanLevels[i] - 30, 3))))
-  c.textContent = format(m * Math.max(0, Math.floor(1 + 1 / 384 * Math.pow(player.talismanLevels[i] - 60, 3))))
-  d.textContent = format(m * Math.max(0, Math.floor(1 + 1 / 500 * Math.pow(player.talismanLevels[i] - 90, 3))))
-  e.textContent = format(m * Math.max(0, Math.floor(1 + 1 / 375 * Math.pow(player.talismanLevels[i] - 120, 3))))
-  f.textContent = format(m * Math.max(0, Math.floor(1 + 1 / 192 * Math.pow(player.talismanLevels[i] - 150, 3))))
-  g.textContent = format(m * Math.max(0, Math.floor(1 + 1 / 1280 * Math.pow(player.talismanLevels[i] - 150, 3))))
-}
-
-export const showEnhanceTalismanPrices = (i: number) => {
-  DOMCacheGetOrSet('talismanEffect').style.display = 'none'
-  DOMCacheGetOrSet('talismanlevelup').style.display = 'block'
-  DOMCacheGetOrSet('talismanrespec').style.display = 'none'
-  const a = DOMCacheGetOrSet('talismanShardCost')
-  const b = DOMCacheGetOrSet('talismanCommonFragmentCost')
-  const c = DOMCacheGetOrSet('talismanUncommonFragmentCost')
-  const d = DOMCacheGetOrSet('talismanRareFragmentCost')
-  const e = DOMCacheGetOrSet('talismanEpicFragmentCost')
-  const f = DOMCacheGetOrSet('talismanLegendaryFragmentCost')
-  const g = DOMCacheGetOrSet('talismanMythicalFragmentCost')
-
-  DOMCacheGetOrSet('talismanLevelUpSummary').textContent = i18next.t('runes.resourcesToEnhance')
-  DOMCacheGetOrSet('talismanLevelUpSummary').style.color = 'gold'
-
-  const array = [
-    G.commonTalismanEnhanceCost,
-    G.uncommonTalismanEnchanceCost,
-    G.rareTalismanEnchanceCost,
-    G.epicTalismanEnhanceCost,
-    G.legendaryTalismanEnchanceCost,
-    G.mythicalTalismanEnchanceCost
-  ]
-  const index = player.talismanRarity[i]
-  const costArray = array[index - 1]
-  const m = G.talismanLevelCostMultiplier[i]
-  a.textContent = format(m * costArray[1])
-  b.textContent = format(m * costArray[2])
-  c.textContent = format(m * costArray[3])
-  d.textContent = format(m * costArray[4])
-  e.textContent = format(m * costArray[5])
-  f.textContent = format(m * costArray[6])
-  g.textContent = format(m * costArray[7])
-}
-
-export const showRespecInformation = (i: number) => {
-  G.talismanRespec = i
-  DOMCacheGetOrSet('talismanEffect').style.display = 'none'
-  DOMCacheGetOrSet('talismanlevelup').style.display = 'none'
-  DOMCacheGetOrSet('talismanrespec').style.display = 'block'
-
-  const runeName = ['speed', 'duplication', 'prism', 'thrift', 'SI']
-  const runeModifier = ['positive', 'positive', 'positive', 'positive', 'positive']
-  if (i <= 6) {
-    for (let k = 1; k <= 5; k++) {
-      G.mirrorTalismanStats[k] = player[`talisman${num[i]}` as const][k]
-    }
-    DOMCacheGetOrSet('confirmTalismanRespec').textContent = i18next.t('runes.talismans.respecConfirm')
-  }
-  if (i === 7) {
-    for (let k = 1; k <= 5; k++) {
-      G.mirrorTalismanStats[k] = 1
-    }
-    DOMCacheGetOrSet('confirmTalismanRespec').textContent = i18next.t('runes.talismans.respecConfirmAll')
-  }
-  for (let j = 1; j <= 5; j++) {
-    const el = DOMCacheGetOrSet(`talismanRespecButton${j}`)
-    if (G.mirrorTalismanStats[j] === 1) {
-      el.style.border = '2px solid limegreen'
-      runeModifier[j - 1] = 'positive'
-    } else if (G.mirrorTalismanStats[j] === -1) {
-      el.style.border = '2px solid crimson'
-      runeModifier[j - 1] = 'negative'
-    }
-    el.textContent = i18next.t(`runes.talismans.modifiers.${runeModifier[j - 1]}`, {
-      name: i18next.t(`runes.names.${runeName[j - 1]}`)
-    })
-  }
-
-  DOMCacheGetOrSet('confirmTalismanRespec').style.display = 'none'
-}
-
-export const changeTalismanModifier = (i: number) => {
-  const runeName = [null, 'speed', 'duplication', 'prism', 'thrift', 'SI']
-  const el = DOMCacheGetOrSet(`talismanRespecButton${i}`)
-  if (G.mirrorTalismanStats[i] === 1) {
-    G.mirrorTalismanStats[i] = -1
-    el.textContent = i18next.t('runes.talismans.modifiers.negative', { name: i18next.t(`runes.names.${runeName[i]}`) })
-    el.style.border = '2px solid crimson'
-  } else {
-    G.mirrorTalismanStats[i] = 1
-    el.textContent = i18next.t('runes.talismans.modifiers.positive', { name: i18next.t(`runes.names.${runeName[i]}`) })
-    el.style.border = '2px solid limegreen'
-  }
-
-  const checkSum = G.mirrorTalismanStats.reduce((a, b) => a! + b!, 0)
-
-  if (checkSum === 1) {
-    DOMCacheGetOrSet('confirmTalismanRespec').style.display = 'block'
-  } else {
-    DOMCacheGetOrSet('confirmTalismanRespec').style.display = 'none'
-  }
-}
-
-export const respecTalismanConfirm = (i: number) => {
-  if (player.runeshards >= 100000 && i < 7) {
-    for (let j = 1; j <= 5; j++) {
-      player[`talisman${num[i]}` as const][j] = G.mirrorTalismanStats[j]
-    }
-    player.runeshards -= 100000
-    DOMCacheGetOrSet('confirmTalismanRespec').style.display = 'none'
-    DOMCacheGetOrSet('talismanrespec').style.display = 'none'
-    DOMCacheGetOrSet('talismanEffect').style.display = 'block'
-    showTalismanEffect(i)
-  } else if (player.runeshards >= 400000 && i === 7) {
-    player.runeshards -= 400000
-    for (let j = 0; j < 7; j++) {
-      for (let k = 1; k <= 5; k++) {
-        player[`talisman${num[j]}` as const][k] = G.mirrorTalismanStats[k]
-      }
-    }
-    DOMCacheGetOrSet('confirmTalismanRespec').style.display = 'none'
-  }
-
-  calculateRuneLevels()
-}
-
-export const respecTalismanCancel = (i: number) => {
-  DOMCacheGetOrSet('talismanrespec').style.display = 'none'
-  if (i < 7) {
-    DOMCacheGetOrSet('talismanEffect').style.display = 'block'
-    showTalismanEffect(i)
-  }
-}
-
-export const updateTalismanAppearance = (i: number) => {
-  const el = DOMCacheGetOrSet(`talisman${i + 1}`)
-  const la = DOMCacheGetOrSet(`talisman${i + 1}level`)
-
-  const rarity = player.talismanRarity[i]
-  if (rarity === 1) {
-    el.style.border = '4px solid white'
-    la.style.color = 'white'
-  }
-  if (rarity === 2) {
-    el.style.border = '4px solid limegreen'
-    la.style.color = 'limegreen'
-  }
-  if (rarity === 3) {
-    el.style.border = '4px solid lightblue'
-    la.style.color = 'lightblue'
-  }
-  if (rarity === 4) {
-    el.style.border = '4px solid plum'
-    la.style.color = 'plum'
-  }
-  if (rarity === 5) {
-    el.style.border = '4px solid orange'
-    la.style.color = 'orange'
-  }
-  if (rarity === 6) {
-    el.style.border = '4px solid crimson'
-    la.style.color = 'var(--crimson-text-color)'
-  }
-}
-
-// Attempt to buy a fixed number of levels (number varies based on
-// ascension). Returns true if any levels were bought, false otherwise.
-export const buyTalismanLevels = (i: number, auto = false): boolean => {
-  let max = 1
-  if (player.ascensionCount > 0) {
-    max = 30
-  }
-  if (player.highestSingularityCount > 0) {
-    max = 180
-  }
-  let hasPurchased = false
-  for (let j = 1; j <= max; j++) {
-    let checkSum = 0
-    let priceMult = G.talismanLevelCostMultiplier[i]
-    if (player.talismanLevels[i] >= 120) {
-      priceMult *= (player.talismanLevels[i] - 90) / 30
-    }
-    if (player.talismanLevels[i] >= 150) {
-      priceMult *= (player.talismanLevels[i] - 120) / 30
-    }
-    if (player.talismanLevels[i] >= 180) {
-      priceMult *= (player.talismanLevels[i] - 170) / 10
-    }
-
-    if (player.talismanLevels[i] < calculateMaxTalismanLevel(i)) {
-      if (
-        player.talismanShards >= priceMult * Math.max(0, Math.floor(1 + 1 / 8 * Math.pow(player.talismanLevels[i], 3)))
-      ) {
-        checkSum++
-      }
-      if (
-        player.commonFragments
-          >= priceMult * Math.max(0, Math.floor(1 + 1 / 32 * Math.pow(player.talismanLevels[i] - 30, 3)))
-      ) {
-        checkSum++
-      }
-      if (
-        player.uncommonFragments
-          >= priceMult * Math.max(0, Math.floor(1 + 1 / 384 * Math.pow(player.talismanLevels[i] - 60, 3)))
-      ) {
-        checkSum++
-      }
-      if (
-        player.rareFragments
-          >= priceMult * Math.max(0, Math.floor(1 + 1 / 500 * Math.pow(player.talismanLevels[i] - 90, 3)))
-      ) {
-        checkSum++
-      }
-      if (
-        player.epicFragments
-          >= priceMult * Math.max(0, Math.floor(1 + 1 / 375 * Math.pow(player.talismanLevels[i] - 120, 3)))
-      ) {
-        checkSum++
-      }
-      if (
-        player.legendaryFragments
-          >= priceMult * Math.max(0, Math.floor(1 + 1 / 192 * Math.pow(player.talismanLevels[i] - 150, 3)))
-      ) {
-        checkSum++
-      }
-      if (
-        player.mythicalFragments
-          >= priceMult * Math.max(0, Math.floor(1 + 1 / 1280 * Math.pow(player.talismanLevels[i] - 150, 3)))
-      ) {
-        checkSum++
-      }
-    }
-
-    if (checkSum === 7) {
-      player.talismanShards -= priceMult * Math.max(0, Math.floor(1 + 1 / 8 * Math.pow(player.talismanLevels[i], 3)))
-      player.commonFragments -= priceMult
-        * Math.max(0, Math.floor(1 + 1 / 32 * Math.pow(player.talismanLevels[i] - 30, 3)))
-      player.uncommonFragments -= priceMult
-        * Math.max(0, Math.floor(1 + 1 / 384 * Math.pow(player.talismanLevels[i] - 60, 3)))
-      player.rareFragments -= priceMult
-        * Math.max(0, Math.floor(1 + 1 / 500 * Math.pow(player.talismanLevels[i] - 90, 3)))
-      player.epicFragments -= priceMult
-        * Math.max(0, Math.floor(1 + 1 / 375 * Math.pow(player.talismanLevels[i] - 120, 3)))
-      player.legendaryFragments -= priceMult
-        * Math.max(0, Math.floor(1 + 1 / 192 * Math.pow(player.talismanLevels[i] - 150, 3)))
-      player.mythicalFragments -= priceMult
-        * Math.max(0, Math.floor(1 + 1 / 1280 * Math.pow(player.talismanLevels[i] - 150, 3)))
-      player.talismanLevels[i] += 1
-      hasPurchased = true
-    } else {
-      break
-    }
-  }
-
-  if (!auto && hasPurchased) {
-    showTalismanPrices(i)
-    // When adding game state recalculations, update the talisman autobuyer in tack() as well
-    updateTalismanInventory()
-    calculateRuneLevels()
-  }
-
-  return hasPurchased
-}
-
-export const buyTalismanEnhance = (i: number, auto = false): boolean => {
-  let checkSum = 0
-  if (player.talismanRarity[i] < 6) {
-    const priceMult = G.talismanLevelCostMultiplier[i]
-    const array = [
-      G.commonTalismanEnhanceCost,
-      G.uncommonTalismanEnchanceCost,
-      G.rareTalismanEnchanceCost,
-      G.epicTalismanEnhanceCost,
-      G.legendaryTalismanEnchanceCost,
-      G.mythicalTalismanEnchanceCost
-    ]
-    const index = player.talismanRarity[i] - 1
-    const costArray = array[index]
-    if (player.commonFragments >= priceMult * costArray[2]) {
-      checkSum++
-    }
-    if (player.uncommonFragments >= priceMult * costArray[3]) {
-      checkSum++
-    }
-    if (player.rareFragments >= priceMult * costArray[4]) {
-      checkSum++
-    }
-    if (player.epicFragments >= priceMult * costArray[5]) {
-      checkSum++
-    }
-    if (player.legendaryFragments >= priceMult * costArray[6]) {
-      checkSum++
-    }
-    if (player.mythicalFragments >= priceMult * costArray[7]) {
-      checkSum++
-    }
-
-    if (checkSum === 6) {
-      player.commonFragments -= priceMult * costArray[2]
-      player.uncommonFragments -= priceMult * costArray[3]
-      player.rareFragments -= priceMult * costArray[4]
-      player.epicFragments -= priceMult * costArray[5]
-      player.legendaryFragments -= priceMult * costArray[6]
-      player.mythicalFragments -= priceMult * costArray[7]
-      player.talismanRarity[i] += 1
-
-      // Appearance always needs updating if bought
-      updateTalismanAppearance(i)
-      if (!auto) {
-        showEnhanceTalismanPrices(i)
-        // When adding game state recalculations, update the talisman autobuyer in tack() as well
-        updateTalismanInventory()
-        calculateRuneLevels()
-      }
-
-      return true
-    }
-  }
-  return false
 }

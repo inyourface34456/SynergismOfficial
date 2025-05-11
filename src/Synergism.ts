@@ -54,8 +54,7 @@ import {
   calculateTotalAcceleratorBoost,
   calculateTotalCoinOwned,
   dailyResetCheck,
-  exitOffline,
-  isShopTalismanUnlocked
+  exitOffline
 } from './Calculate'
 import {
   corruptionButtonsAdd,
@@ -90,11 +89,13 @@ import {
 import { redeemShards } from './Runes'
 import { c15RewardUpdate } from './Statistics'
 import {
-  buyTalismanEnhance,
-  buyTalismanLevels,
-  calculateMaxTalismanLevel,
+  generateTalismansHTML,
+  getTalisman,
+  initTalismans,
+  noTalismanFragments,
+  type TalismanKeys,
   toggleTalismanBuy,
-  updateTalismanAppearance,
+  updateAllTalismanHTML,
   updateTalismanInventory
 } from './Talismans'
 import { calculatetax } from './Tax'
@@ -662,15 +663,16 @@ export const player: Player = {
   antSacrificeTimer: 0,
   antSacrificeTimerReal: 0,
 
-  talismanLevels: [0, 0, 0, 0, 0, 0, 0],
-  talismanRarity: [1, 1, 1, 1, 1, 1, 1],
-  talismanOne: [null, -1, 1, 1, 1, -1],
-  talismanTwo: [null, 1, 1, -1, -1, 1],
-  talismanThree: [null, 1, -1, 1, 1, -1],
-  talismanFour: [null, -1, -1, 1, 1, 1],
-  talismanFive: [null, 1, 1, -1, -1, 1],
-  talismanSix: [null, 1, 1, 1, -1, -1],
-  talismanSeven: [null, -1, 1, -1, 1, 1],
+  talismans: {
+    exemption: noTalismanFragments,
+    chronos: noTalismanFragments,
+    midas: noTalismanFragments,
+    metaphysics: noTalismanFragments,
+    polymath: noTalismanFragments,
+    mortuus: noTalismanFragments,
+    plastic: noTalismanFragments
+  },
+
   talismanShards: 0,
   commonFragments: 0,
   uncommonFragments: 0,
@@ -2046,9 +2048,6 @@ const loadSynergy = () => {
         0
       )
 
-      player.talismanLevels = [0, 0, 0, 0, 0, 0, 0]
-      player.talismanRarity = [1, 1, 1, 1, 1, 1, 1]
-
       player.talismanShards = 0
       player.commonFragments = 0
       player.uncommonFragments = 0
@@ -2057,14 +2056,6 @@ const loadSynergy = () => {
       player.legendaryFragments = 0
       player.mythicalFragments = 0
       player.buyTalismanShardPercent = 10
-
-      player.talismanOne = [null, -1, 1, 1, 1, -1]
-      player.talismanTwo = [null, 1, 1, -1, -1, 1]
-      player.talismanThree = [null, 1, -1, 1, 1, -1]
-      player.talismanFour = [null, -1, -1, 1, 1, 1]
-      player.talismanFive = [null, 1, 1, -1, -1, 1]
-      player.talismanSix = [null, 1, 1, 1, -1, -1]
-      player.talismanSeven = [null, -1, 1, -1, 1, 1]
 
       player.antSacrificePoints = 0
       player.antSacrificeTimer = 0
@@ -2420,13 +2411,9 @@ const loadSynergy = () => {
     calculateHypercubeBlessings()
     calculateTesseractBlessings()
     calculateCubeBlessings()
-    updateTalismanAppearance(0)
-    updateTalismanAppearance(1)
-    updateTalismanAppearance(2)
-    updateTalismanAppearance(3)
-    updateTalismanAppearance(4)
-    updateTalismanAppearance(5)
-    updateTalismanAppearance(6)
+
+    updateAllTalismanHTML()
+
     for (const id in player.ascStatToggles) {
       toggleAscStatPerSecond(+id) // toggle each stat twice to make sure the displays are correct and match what they used to be
       toggleAscStatPerSecond(+id)
@@ -5301,6 +5288,7 @@ export const updateEffectiveLevelMult = (): void => {
     + ((0.01 * Math.log(player.talismanShards + 1)) / Math.log(4))
       * Math.min(1, player.constantUpgrades[9])
   G.effectiveLevelMult *= G.challenge15Rewards.runeBonus.value
+  G.effectiveLevelMult *= G.cubeBonusMultiplier[9]
 }
 
 export const updateAll = (): void => {
@@ -5649,48 +5637,14 @@ export const updateAll = (): void => {
   }
 
   // Talismans
-  if (player.researches[130] > 0 || player.researches[135] > 0) {
-    const talismansUnlocked = [
-      player.achievements[119] > 0,
-      player.achievements[126] > 0,
-      player.achievements[133] > 0,
-      player.achievements[140] > 0,
-      player.achievements[147] > 0,
-      player.antUpgrades[11]! > 0 || player.ascensionCount > 0,
-      isShopTalismanUnlocked()
-    ]
-    let upgradedTalisman = false
 
-    // First, we need to enhance all of the talismans. Then, we can fortify all of the talismans.
-    // If we were to do this in one loop, the players resources would be drained on individual expensive levels
-    // of early talismans before buying important enhances for the later ones. This results in drastically
-    // reduced overall gains when talisman resources are scarce.
-    if (player.autoEnhanceToggle && player.researches[135] > 0) {
-      for (let i = 0; i < talismansUnlocked.length; ++i) {
-        if (talismansUnlocked[i] && player.talismanRarity[i] < 6) {
-          upgradedTalisman = buyTalismanEnhance(i, true) || upgradedTalisman
-        }
-      }
-    }
-
-    if (player.autoFortifyToggle && player.researches[130] > 0) {
-      for (let i = 0; i < talismansUnlocked.length; ++i) {
-        const maxTalismanLevel = calculateMaxTalismanLevel(i)
-        if (
-          talismansUnlocked[i]
-          && player.talismanLevels[i] < maxTalismanLevel
-        ) {
-          upgradedTalisman = buyTalismanLevels(i, true) || upgradedTalisman
-        }
-      }
-    }
-
-    // Recalculate talisman-related upgrades and display on success
-    if (upgradedTalisman) {
-      updateTalismanInventory()
-      calculateRuneLevels()
+  if ((player.researches[130] > 0 || player.researches[135] > 0) && player.autoFortifyToggle) {
+    for (const key in player.talismans) {
+      getTalisman(key as TalismanKeys).buyLevelToRarityIncrease(true)
     }
   }
+
+  calculateRuneLevels()
 
   // Generation
   if (player.upgrades[101] > 0.5) {
@@ -6372,6 +6326,7 @@ export const reloadShit = (reset = false) => {
   }
 
   initRedAmbrosiaUpgrades(player.redAmbrosiaUpgrades)
+  initTalismans(player.talismans)
 
   if (!reset) {
     calculateOffline()
@@ -6495,11 +6450,14 @@ window.addEventListener('load', async () => {
   }
   document.title = `Synergism v${version}`
 
+  generateTalismansHTML()
   generateEventHandlers()
   corruptionButtonsAdd()
   corruptionLoadoutTableCreate()
   createCampaignIconHTMLS()
+
   initRedAmbrosiaUpgrades(player.redAmbrosiaUpgrades)
+  initTalismans(player.talismans)
   Alert(
     `If you have the time, please submit feedback for the recent update! Form closes May 11, 2025. \n <a href="https://forms.gle/SLVUakXBc9RvEfqz8" style="border: 2px solid gold" target="_blank">CLICK ME!</a>`
   )
