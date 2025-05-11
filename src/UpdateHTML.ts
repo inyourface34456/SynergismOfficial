@@ -272,10 +272,6 @@ export const revealStuff = () => {
     ? DOMCacheGetOrSet('toggleautofortify').style.display = 'block'
     : DOMCacheGetOrSet('toggleautofortify').style.display = 'none'
 
-  player.researches[135] > 0 // 6x10 Research [Talisman Auto Sac]
-    ? DOMCacheGetOrSet('toggleautoenhance').style.display = 'block'
-    : DOMCacheGetOrSet('toggleautoenhance').style.display = 'none'
-
   for (let z = 1; z <= 5; z++) {
     ;(player.researches[190] > 0) // 8x15 Research [Auto Tesseracts]
       ? DOMCacheGetOrSet(`tesseractAutoToggle${z}`).style.display = 'block'
@@ -317,6 +313,10 @@ export const revealStuff = () => {
   isShopTalismanUnlocked() // Plastic Talisman Shop Purchase
     ? DOMCacheGetOrSet('plasticTalismanContainer').style.display = 'flex'
     : DOMCacheGetOrSet('plasticTalismanContainer').style.display = 'none'
+
+  player.ascensionCount > 100 // Wow Square
+    ? DOMCacheGetOrSet('wowSquareTalismanContainer').style.display = 'flex'
+    : DOMCacheGetOrSet('wowSquareTalismanContainer').style.display = 'none'
 
   player.cubeUpgrades[8] > 0
     ? DOMCacheGetOrSet('reincarnateAutoUpgrade').style.display = 'block'

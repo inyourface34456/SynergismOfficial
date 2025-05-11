@@ -670,7 +670,8 @@ export const player: Player = {
     metaphysics: noTalismanFragments,
     polymath: noTalismanFragments,
     mortuus: noTalismanFragments,
-    plastic: noTalismanFragments
+    plastic: noTalismanFragments,
+    wowSquare: noTalismanFragments
   },
 
   talismanShards: 0,
@@ -2400,7 +2401,6 @@ const loadSynergy = () => {
     )
 
     DOMCacheGetOrSet('talismanlevelup').style.display = 'none'
-    DOMCacheGetOrSet('talismanrespec').style.display = 'none'
 
     DOMCacheGetOrSet('antSacrificeSummary').style.display = 'none'
 
@@ -2766,7 +2766,7 @@ const loadSynergy = () => {
       )
       DOMCacheGetOrSet('toggleautofortify').style.border = '2px solid red'
     }
-    if (player.autoEnhanceToggle) {
+    /*if (player.autoEnhanceToggle) {
       DOMCacheGetOrSet('toggleautoenhance').textContent = i18next.t(
         'runes.autoEnhanceOn'
       )
@@ -2776,7 +2776,7 @@ const loadSynergy = () => {
         'runes.autoEnhanceOff'
       )
       DOMCacheGetOrSet('toggleautoenhance').style.border = '2px solid red'
-    }
+    }*/
     player.saveOfferingToggle = false // Lint doesnt like it being inside if
     DOMCacheGetOrSet('saveOffToggle').textContent = i18next.t(
       'toggles.saveOfferingsOff'

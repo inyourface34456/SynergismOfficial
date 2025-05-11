@@ -433,7 +433,6 @@ export const generateEventHandlers = () => {
   }
 
   DOMCacheGetOrSet('toggleautoBuyFragments').addEventListener('click', () => toggleAutoBuyFragment())
-  DOMCacheGetOrSet('toggleautoenhance').addEventListener('click', () => toggleautoenhance())
   DOMCacheGetOrSet('toggleautofortify').addEventListener('click', () => toggleautofortify())
 
   // Talisman Fragments/Shards

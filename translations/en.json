@@ -3657,6 +3657,12 @@
         "inscription": "Inscription: Quark Gain is increased by <<gold|{{val}}>>.",
         "signature": "Signature: None. You cannot seem to sign your name on this hunk of plastic."
       },
+      "wowSquare": {
+        "name": "The Wow! Square",
+        "description": "For the average :unsmith:, this is a cube.",
+        "inscription": "<<gold | ✏>> Inscription: Even-Dimensional Cube Gain is increased by <<gold|{{val}}>>",
+        "signature": "<<crimson | ✎>> Signature: Odd-Dimensional Cube Gain is increased by <<gold|12%>>"
+      },
       "shards": {
         "shard": "Talisman Shard",
         "commonFragment": "Common Fragment",

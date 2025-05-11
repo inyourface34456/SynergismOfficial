@@ -90,6 +90,11 @@ interface PlasticReward extends BaseReward {
   quarkBonus: number
 }
 
+interface WowSquareReward extends BaseReward {
+  evenDimBonus: number
+  oddDimBonus: number
+}
+
 type TalismanTypeMap = {
   exemption: ExemptionReward
   chronos: ChronosReward
@@ -98,6 +103,7 @@ type TalismanTypeMap = {
   polymath: PolymathReward
   mortuus: MortuusReward
   plastic: PlasticReward
+  wowSquare: WowSquareReward
 }
 
 export type TalismanKeys = keyof TalismanTypeMap
@@ -373,7 +379,6 @@ export class Talisman<K extends TalismanKeys> {
   updateRewardHTML () {
     DOMCacheGetOrSet('talismanlevelup').style.display = 'none'
     DOMCacheGetOrSet('talismanEffect').style.display = 'block'
-    DOMCacheGetOrSet('talismanrespec').style.display = 'none'
 
     DOMCacheGetOrSet('talismanTitle').innerHTML = `${this.name} - ${i18next.t(`runes.talismans.rarity.${this.rarity}`)}`
     DOMCacheGetOrSet('talismanDescription').innerHTML = this.description
@@ -465,7 +470,6 @@ export class Talisman<K extends TalismanKeys> {
   updateCostHTML () {
     DOMCacheGetOrSet('talismanEffect').style.display = 'none'
     DOMCacheGetOrSet('talismanlevelup').style.display = 'block'
-    DOMCacheGetOrSet('talismanrespec').style.display = 'none'
     const a = DOMCacheGetOrSet('talismanShardCost')
     const b = DOMCacheGetOrSet('talismanCommonFragmentCost')
     const c = DOMCacheGetOrSet('talismanUncommonFragmentCost')
@@ -558,7 +562,7 @@ const regularCostProgression = (baseMult: number, level: number): Record<Talisma
   }
 }
 
-/*const exponentialCostProgression = (baseMult: number, level: number): Record<TalismanCraftItems, number> => {
+const exponentialCostProgression = (baseMult: number, level: number): Record<TalismanCraftItems, number> => {
   return {
     shard: Math.floor(baseMult * Math.pow(1.12, level) * 100),
     commonFragment: level >= 30 ? Math.floor(baseMult * Math.pow(1.12, level - 30) * 50) : 0,
@@ -568,7 +572,7 @@ const regularCostProgression = (baseMult: number, level: number): Record<Talisma
     legendaryFragment: level >= 150 ? Math.floor(baseMult * Math.pow(1.12, level - 150) * 10) : 0,
     mythicalFragment: level >= 150 ? Math.floor(baseMult * Math.pow(1.12, level - 150) * 5) : 0
   }
-}*/
+}
 
 export const universalTalismanMaxLevelIncreasers = () => {
   return sumContents([
@@ -758,6 +762,31 @@ const talismanData: { [K in TalismanKeys]: TalismanData<K> } = {
       SI: 0.75,
       IA: 0.005
     }
+  },
+  wowSquare: {
+    maxLevel: 210,
+    baseMult: 1e20,
+    costs: exponentialCostProgression,
+    levelCapIncrease: () => universalTalismanMaxLevelIncreasers(),
+    rewards: (n) => {
+      const inscriptValues = [1, 1.025, 1.05, 1.1, 1.15, 1.2, 1.3, 1.4]
+      return {
+        inscriptionDesc: i18next.t('runes.talismans.wowSquare.inscription', {
+          val: formatAsPercentIncrease(inscriptValues[n] ?? 1, 0)
+        }),
+        signatureDesc: i18next.t('runes.talismans.wowSquare.signature'),
+        evenDimBonus: inscriptValues[n] ?? 1,
+        oddDimBonus: n >= 6 ? 1.12 : 1
+      }
+    },
+    talismanBaseCoefficient: {
+      speed: 0,
+      duplication: 1,
+      prism: 1,
+      thrift: 0,
+      SI: 1,
+      IA: 0
+    }
   }
 }
 
@@ -841,7 +870,7 @@ export const updateAllTalismanHTML = () => {
 
 export const generateTalismansHTML = () => {
   const alreadyGenerated = document.getElementsByClassName('talismanContainer').length > 0
-  console.log(alreadyGenerated)
+
   if (alreadyGenerated) {
     return
   } else {
