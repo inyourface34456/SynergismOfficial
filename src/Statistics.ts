@@ -30,7 +30,6 @@ import {
   calculateCubeMultFromPowder,
   calculateCubeMultiplier,
   calculateDilatedFiveLeafBonus,
-  calculateEffectiveIALevel,
   calculateEventBuff,
   calculateExalt6Penalty,
   calculateEXUltraCubeBonus,
@@ -94,6 +93,7 @@ import {
 import { PCoinUpgradeEffects } from './PseudoCoinUpgrades'
 import { getQuarkBonus } from './Quark'
 import { getRedAmbrosiaUpgrade } from './RedAmbrosiaUpgrades'
+import { getRune, sumOfRuneLevels } from './Runes'
 import { shopData } from './Shop'
 import { calculateSingularityDebuff, getFastForwardTotalMultiplier } from './singularity'
 import { format, player } from './Synergism'
@@ -169,7 +169,7 @@ export const allCubeStats: StatLine[] = [
   },
   {
     i18n: 'InfiniteAscent',
-    stat: () => 1 + (1 / 100) * calculateEffectiveIALevel()
+    stat: () => getRune('infiniteAscent').bonus.cubeMult
   },
   {
     i18n: 'Beta',
@@ -911,7 +911,7 @@ export const allOfferingStats = [
   },
   {
     i18n: 'SuperiorIntellect',
-    stat: () => 1 + (1 / 2000) * G.rune5level * G.effectiveLevelMult // Superior Intellect Rune
+    stat: () => getRune('superiorIntellect').bonus.offeringMult // Superior Intellect Rune
   },
   {
     i18n: 'ReincarnationChallenge',
@@ -1154,7 +1154,7 @@ export const allQuarkStats: StatLine[] = [
   },
   {
     i18n: 'InfiniteAscent',
-    stat: () => isIARuneUnlocked() ? 1.1 + (5 / 1300) * calculateEffectiveIALevel() : 1
+    stat: () => isIARuneUnlocked() ? getRune('infiniteAscent').bonus.quarkMult : 1
   },
   {
     i18n: 'QuarkHepteract',
@@ -1450,12 +1450,7 @@ export const allObtainiumStats: StatLine[] = [
   },
   {
     i18n: 'Rune5',
-    stat: () =>
-      1
-      + (G.rune5level / 200) * G.effectiveLevelMult
-        * (1
-          + (player.researches[84] / 200)
-            * (1 + G.effectiveRuneSpiritPower[5] * player.corruptions.used.totalCorruptionDifficultyMultiplier)) // Rune 5
+    stat: () => getRune('superiorIntellect').bonus.obtainiumMult
   },
   {
     i18n: 'ChallengeAchievements',
@@ -1471,7 +1466,7 @@ export const allObtainiumStats: StatLine[] = [
   },
   {
     i18n: 'Achievement53',
-    stat: () => (player.achievements[53] > 0) ? 1 + G.runeSum / 800 : 1 // Achievement 53
+    stat: () => (player.achievements[53] > 0) ? 1 + sumOfRuneLevels() / 800 : 1 // Achievement 53
   },
   {
     i18n: 'Achievement128',
@@ -2376,7 +2371,7 @@ export const allAddCodeTimerStats: StatLine[] = [
   },
   {
     i18n: 'InfiniteAscent',
-    stat: () => player.runelevels[6] > 0 ? 0.8 : 1, // Infinite Ascent rune reduction (20%)
+    stat: () => getRune('antiquities').level > 0 ? 0.8 : 1, // Infinite Ascent rune reduction (20%)
     color: 'lime'
   },
   {
@@ -2625,7 +2620,7 @@ export const allMiscStats: StatLine[] = [
   },
   {
     i18n: 'RuneSum',
-    stat: () => G.runeSum,
+    stat: () => sumOfRuneLevels(),
     color: 'orange'
   },
   {
@@ -3453,7 +3448,7 @@ export const gameStages = (): Stage[] => {
       stage: 19,
       tier: 5,
       name: 'omega-singularity',
-      unlocked: player.singularityCount > 0 && player.runelevels[6] > 0,
+      unlocked: player.singularityCount > 0 && getRune('antiquities').level > 0,
       reset: player.achievements[183] === 1
     },
     {

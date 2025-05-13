@@ -6,7 +6,6 @@ import {
   calculateAscensionSpeedMult,
   calculateGlobalSpeedMult,
   calculateGoldenQuarks,
-  calculateMaxRunes,
   calculateOcteractMultiplier,
   calculateRedAmbrosiaGenerationSpeed,
   calculateRedAmbrosiaLuck,
@@ -17,7 +16,7 @@ import {
 import { quarkHandler } from './Quark'
 import { getRedAmbrosiaUpgrade } from './RedAmbrosiaUpgrades'
 import { Seed, seededRandom } from './RNG'
-import { checkMaxRunes, redeemShards, unlockedRune } from './Runes'
+import { getNumberUnlockedRunes, getRune, indexToRune, type RuneKeys, sacrificeOfferings } from './Runes'
 import { useConsumable } from './Shop'
 import { player } from './Synergism'
 import { Tabs } from './Tabs'
@@ -360,29 +359,30 @@ export const automaticTools = (input: AutoToolInput, time: number) => {
 
         // If you bought cube upgrade 2x10 then it sacrifices to all runes equally
         if (player.cubeUpgrades[20] === 1) {
-          const maxi = player.highestSingularityCount >= 50
-            ? 7
-            : player.highestSingularityCount >= 30
-            ? 6
-            : 5
-          const notMaxed = maxi - checkMaxRunes(maxi)
-          if (notMaxed > 0) {
-            const baseAmount = Math.floor(player.runeshards / notMaxed / 2)
-            for (let i = 0; i < maxi; i++) {
-              if (
-                !(
-                  !unlockedRune(i + 1)
-                  || player.runelevels[i] >= calculateMaxRunes(i + 1)
-                )
-              ) {
-                redeemShards(i + 1, true, baseAmount)
-              }
-            }
+          let numUnlocked = getNumberUnlockedRunes()
+
+          // Do not purchase AoAG under s50
+          if (player.highestSingularityCount < 50 && getRune('antiquities').isUnlocked) {
+            numUnlocked -= 1
+          }
+
+          // Do not purchase IA under s30
+          if (player.highestSingularityCount < 30 && getRune('infiniteAscent').isUnlocked) {
+            numUnlocked -= 1
+          }
+
+          const offeringPerRune = Math.floor(player.runeshards * 0.5 / numUnlocked)
+
+          for (const key of Object.keys(player.runes)) {
+            const runeKey = key as RuneKeys
+            sacrificeOfferings(runeKey, offeringPerRune, true)
           }
         } else {
           // If you did not buy cube upgrade 2x10 it sacrifices to selected rune.
           const rune = player.autoSacrifice
-          redeemShards(rune, true, 0)
+          if (rune !== 0) {
+            sacrificeOfferings(indexToRune[rune], player.runeshards, true)
+          }
         }
         // Modulo used in event of a large delta time (this could happen for a number of reasons)
         player.sacrificeTimer %= 1

@@ -49,7 +49,6 @@ import {
   calculateObtainium,
   calculateOfferings,
   calculateOffline,
-  calculateRuneLevels,
   calculateSigmoidExponential,
   calculateTotalAcceleratorBoost,
   calculateTotalCoinOwned,
@@ -86,7 +85,7 @@ import {
   updateSingularityGlobalPerks,
   updateTesseractAutoBuyAmount
 } from './Reset'
-import { redeemShards } from './Runes'
+import { generateRunesHTML, getRune, indexToRune, initRunes, sacrificeOfferings, sumOfRuneLevels } from './Runes'
 import { c15RewardUpdate } from './Statistics'
 import {
   generateTalismansHTML,
@@ -498,8 +497,16 @@ export const player: Player = {
   crystalUpgrades: [0, 0, 0, 0, 0, 0, 0, 0],
   crystalUpgradesCost: [7, 15, 20, 40, 100, 200, 500, 1000],
 
-  runelevels: [1, 1, 1, 1, 1, 0, 0],
-  runeexp: [0, 0, 0, 0, 0, 0, 0],
+  runes: {
+    speed: new Decimal('1e12'),
+    duplication: new Decimal('1e23'),
+    prism: new Decimal('1e32'),
+    thrift: new Decimal('1e41'),
+    superiorIntellect: new Decimal('1e59'),
+    infiniteAscent: new Decimal('1e70'),
+    antiquities: new Decimal('1e200')
+  },
+
   runeshards: 0,
   maxofferings: 0,
   offeringpersecond: 0,
@@ -2875,8 +2882,8 @@ const loadSynergy = () => {
       )
     }
 
-    if (player.autoSacrificeToggle && player.autoSacrifice > 0.5) {
-      DOMCacheGetOrSet(`rune${player.autoSacrifice}`).style.backgroundColor = 'orange'
+    if (player.autoSacrificeToggle && player.autoSacrifice > 0) {
+      DOMCacheGetOrSet(`${indexToRune[player.autoSacrifice]}Rune`).style.backgroundColor = 'orange'
     }
 
     if (player.autoWarpCheck) {
@@ -2910,7 +2917,6 @@ const loadSynergy = () => {
     updateTalismanInventory()
     calculateObtainium()
     calculateAnts()
-    calculateRuneLevels()
     resetHistoryRenderAllTables()
     updateSingularityAchievements()
     updateSingularityGlobalPerks()
@@ -3424,8 +3430,8 @@ export const updateAllTick = (): void => {
       + 3 * player.researches[20]
       + G.cubeBonusMultiplier[1])
   if (player.unlocks.prestige) {
-    a += Math.floor(Math.pow((G.rune1level * G.effectiveLevelMult) / 4, 1.25))
-    a *= 1 + ((G.rune1level * 1) / 400) * G.effectiveLevelMult
+    a += getRune('speed').bonus.additiveAccelerators
+    a *= getRune('speed').bonus.multiplicativeAccelerators
   }
 
   calculateAcceleratorMultiplier()
@@ -3613,26 +3619,11 @@ export const updateAllMultiplier = (): void => {
   }
   a += 20
     * player.researches[94]
-    * Math.floor(
-      (G.rune1level
-        + G.rune2level
-        + G.rune3level
-        + G.rune4level
-        + G.rune5level)
-        / 8
-    )
+    * Math.floor(sumOfRuneLevels() / 8)
 
   G.freeUpgradeMultiplier = Math.min(1e100, a)
 
-  if (player.achievements[38] > 0.5) {
-    a += (Math.floor(
-      (Math.floor((G.rune2level / 10) * G.effectiveLevelMult)
-        * Math.floor(1 + (G.rune2level / 10) * G.effectiveLevelMult))
-        / 2
-    )
-      * 100)
-      / 100
-  }
+  a += getRune('duplication').bonus.additiveMultipliers
 
   a *= 1 + player.achievements[57] / 100
   a *= 1 + player.achievements[58] / 100
@@ -3656,7 +3647,7 @@ export const updateAllMultiplier = (): void => {
     + (1 / 40) * player.researches[13]
     + (3 / 200) * player.researches[14]
     + (1 / 200) * player.researches[15]
-  a *= 1 + (G.rune2level / 400) * G.effectiveLevelMult
+  a *= getRune('duplication').bonus.multiplicativeMultipliers
   a *= 1 + (1 / 20) * player.researches[87]
   a *= 1 + (1 / 100) * player.researches[128]
   a *= 1 + (0.8 / 100) * player.researches[143]
@@ -3973,9 +3964,7 @@ export const multipliers = (): void => {
   }
   if (player.achievements[44] > 0.5) {
     G.globalCrystalMultiplier = G.globalCrystalMultiplier.times(
-      Decimal.pow((G.rune3level / 2) * G.effectiveLevelMult, 2)
-        .times(Decimal.pow(2, (G.rune3level * G.effectiveLevelMult) / 2 - 8))
-        .add(1)
+      Decimal.pow(10, getRune('prism').bonus.productionLog10)
     )
   }
   if (player.upgrades[36] > 0.5) {
@@ -4580,21 +4569,7 @@ export const updateAntMultipliers = (): void => {
   G.globalAntMult = new Decimal(10)
   // Update 2.9.0: Updated to give a 5x multiplier no matter what
   G.globalAntMult = G.globalAntMult.times(5)
-  G.globalAntMult = G.globalAntMult.times(
-    1
-      + (1 / 2500)
-        * Math.pow(
-          G.rune5level
-            * G.effectiveLevelMult
-            * (1
-              + (player.researches[84] / 200)
-                * (1
-                  + (1
-                    * G.effectiveRuneSpiritPower[5]
-                    * player.corruptions.used.totalCorruptionDifficultyMultiplier))),
-          2
-        )
-  )
+  G.globalAntMult = G.globalAntMult.times(getRune('superiorIntellect').bonus.antSpeed)
   if (player.upgrades[76] === 1) {
     G.globalAntMult = G.globalAntMult.times(5)
   }
@@ -4635,9 +4610,12 @@ export const updateAntMultipliers = (): void => {
       G.effectiveRuneBlessingPower[5]
     )
   )
+
+  // TODO: Replace with Talisman Bonus --Platonic
   G.globalAntMult = G.globalAntMult.times(
-    Decimal.pow(1 + G.runeSum / 100, G.talisman6Power)
+    Decimal.pow(1 + sumOfRuneLevels() / 100, 0.5)
   )
+
   G.globalAntMult = G.globalAntMult.times(
     Decimal.pow(1.1, CalcECC('reincarnation', player.challengecompletions[9]))
   )
@@ -5056,7 +5034,6 @@ export const resetCheck = async (
         }
       }
       updateChallengeDisplay()
-      calculateRuneLevels()
       calculateAnts()
     }
     if (player.shopUpgrades.instantChallenge === 0 || leaving) {
@@ -5161,7 +5138,7 @@ export const resetCheck = async (
   }
 
   if (i === 'singularity') {
-    if (player.runelevels[6] === 0) {
+    if (getRune('antiquities').level === 0) {
       return Alert(i18next.t('main.noAntiquity'))
     }
 
@@ -5450,7 +5427,7 @@ export const updateAll = (): void => {
   updateEffectiveLevelMult() // update before prism rune, fixes c15 bug
 
   let c = 0
-  c += (Math.floor((G.rune3level / 16) * G.effectiveLevelMult) * 100) / 100
+  c += getRune('prism').bonus.crystalLevels
   if (
     player.upgrades[73] > 0.5
     && player.currentChallenge.reincarnation !== 0
@@ -5644,8 +5621,6 @@ export const updateAll = (): void => {
     }
   }
 
-  calculateRuneLevels()
-
   // Generation
   if (player.upgrades[101] > 0.5) {
     player.fourthGeneratedCoin = player.fourthGeneratedCoin.add(
@@ -5791,11 +5766,6 @@ export const updateAll = (): void => {
     player.researchPoints = 1e300
   }
 
-  G.optimalOfferingTimer = 600
-    + 30 * player.researches[85]
-    + 0.4 * G.rune5level
-    + 120 * player.shopUpgrades.offeringEX
-  G.optimalObtainiumTimer = 3600 + 120 * player.shopUpgrades.obtainiumEX
   autoBuyAnts()
 
   if (
@@ -6214,7 +6184,7 @@ export const synergismHotkeys = (event: KeyboardEvent, key: string): void => {
       }
       if (G.currentTab === Tabs.Runes) {
         if (getActiveSubTab() === 0) {
-          redeemShards(num)
+          sacrificeOfferings(indexToRune[num], player.runeshards)
         } else if (getActiveSubTab() === 2) {
           buyRuneBonusLevels('Blessings', num)
         } else if (getActiveSubTab() === 3) {
@@ -6239,6 +6209,11 @@ export const synergismHotkeys = (event: KeyboardEvent, key: string): void => {
         toggleChallenges(6)
         challengeDisplay(6)
       }
+      if (G.currentTab === Tabs.Runes) {
+        if (getActiveSubTab() === 0) {
+          sacrificeOfferings('infiniteAscent', player.runeshards)
+        }
+      }
       break
     case '7':
       if (G.currentTab === Tabs.Buildings && G.buildingSubTab === 'diamond') {
@@ -6247,6 +6222,11 @@ export const synergismHotkeys = (event: KeyboardEvent, key: string): void => {
       if (G.currentTab === Tabs.Challenges && player.achievements[113] === 1) {
         toggleChallenges(7)
         challengeDisplay(7)
+      }
+      if (G.currentTab === Tabs.Runes) {
+        if (getActiveSubTab() === 0) {
+          sacrificeOfferings('antiquities', player.runeshards)
+        }
       }
       break
     case '8':
@@ -6325,8 +6305,15 @@ export const reloadShit = (reset = false) => {
     loadSynergy()
   }
 
+  console.log(player.runes)
   initRedAmbrosiaUpgrades(player.redAmbrosiaUpgrades)
+  initRunes(player.runes)
   initTalismans(player.talismans)
+
+  console.log(sumOfRuneLevels())
+  console.log(getRune('duplication').runeEXP)
+  console.log(getRune('duplication').level)
+  console.log(getRune('duplication').freeLevels)
 
   if (!reset) {
     calculateOffline()
@@ -6450,6 +6437,7 @@ window.addEventListener('load', async () => {
   }
   document.title = `Synergism v${version}`
 
+  generateRunesHTML()
   generateTalismansHTML()
   generateEventHandlers()
   corruptionButtonsAdd()
@@ -6457,6 +6445,7 @@ window.addEventListener('load', async () => {
   createCampaignIconHTMLS()
 
   initRedAmbrosiaUpgrades(player.redAmbrosiaUpgrades)
+  initRunes(player.runes)
   initTalismans(player.talismans)
   Alert(
     `If you have the time, please submit feedback for the recent update! Form closes May 11, 2025. \n <a href="https://forms.gle/SLVUakXBc9RvEfqz8" style="border: 2px solid gold" target="_blank">CLICK ME!</a>`

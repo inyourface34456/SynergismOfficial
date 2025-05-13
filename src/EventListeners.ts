@@ -65,7 +65,7 @@ import { buyPlatonicUpgrades, createPlatonicDescription } from './Platonic'
 import { displayRedAmbrosiaLevels, getRedAmbrosiaUpgrade, resetRedAmbrosiaDisplay } from './RedAmbrosiaUpgrades'
 import { buyResearch, researchDescriptions } from './Research'
 import { resetrepeat, updateAutoCubesOpens, updateAutoReset, updateTesseractAutoBuyAmount } from './Reset'
-import { displayRuneInformation, redeemShards } from './Runes'
+import { getRune, runeToIndex, sacrificeOfferings } from './Runes'
 import { buyShopUpgrades, resetShopUpgrades, shopData, shopDescriptions, shopUpgradeTypes, useConsumable } from './Shop'
 import { buyGoldenQuarks, getLastUpgradeInfo, singularityPerks } from './singularity'
 import { displayStats } from './Statistics'
@@ -91,7 +91,6 @@ import {
   toggleautobuytesseract,
   toggleAutoChallengeRun,
   toggleAutoChallengesIgnore,
-  toggleautoenhance,
   toggleautofortify,
   toggleautoopensCubes,
   toggleAutoResearch,
@@ -410,16 +409,20 @@ export const generateEventHandlers = () => {
   }
 
   // Part 1: Runes Subtab
-  for (let index = 0; index < 7; index++) {
-    const rune = DOMCacheGetOrSet(`rune${index + 1}`)
-    rune.addEventListener('mouseover', () => displayRuneInformation(index + 1))
-    rune.addEventListener('focus', () => displayRuneInformation(index + 1))
-    rune.addEventListener('click', () => toggleAutoSacrifice(index + 1))
 
-    const activateRune = DOMCacheGetOrSet(`activaterune${index + 1}`)
-    activateRune.addEventListener('mouseover', () => displayRuneInformation(index + 1))
-    activateRune.addEventListener('focus', () => displayRuneInformation(index + 1))
-    activateRune.addEventListener('click', () => redeemShards(index + 1))
+  const runeStats = Object.keys(
+    player.runes
+  ) as (keyof Player['runes'])[]
+  for (const key of runeStats) {
+    const rune = DOMCacheGetOrSet(`${key}Rune`)
+    rune.addEventListener('mouseover', () => getRune(key).updateFocusedRuneHTML())
+    rune.addEventListener('focus', () => getRune(key).updateFocusedRuneHTML())
+    rune.addEventListener('click', () => toggleAutoSacrifice(runeToIndex[key]))
+
+    const activateRune = DOMCacheGetOrSet(`${key}RuneSacrifice`)
+    activateRune.addEventListener('mouseover', () => getRune(key).updateFocusedRuneHTML())
+    activateRune.addEventListener('focus', () => getRune(key).updateFocusedRuneHTML())
+    activateRune.addEventListener('click', () => sacrificeOfferings(key, player.runeshards, false))
   }
 
   // Part 2: Talismans Subtab

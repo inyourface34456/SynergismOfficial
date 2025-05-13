@@ -168,7 +168,7 @@ export class CorruptionLoadout {
   }
 
   #droughtEffect () {
-    return G.droughtMultiplier[this.#levels.drought]
+    return Math.pow(G.droughtMultiplier[this.#levels.drought], 1 - 1 / 2 * player.platonicUpgrades[13])
   }
 
   #deflationEffect () {

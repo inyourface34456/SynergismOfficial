@@ -2,7 +2,6 @@ import {
   calculateAnts,
   calculateAntSacrificeELO,
   calculateAntSacrificeRewards,
-  calculateRuneLevels,
   calculateSigmoid,
   calculateSigmoidExponential
 } from './Calculate'
@@ -250,7 +249,6 @@ export const buyAntUpgrade = (originalCost: DecimalSource, auto: boolean, index:
       thisCost = getAntUpgradeCost(originalCost, buyFrom, index)
     }
     calculateAnts()
-    calculateRuneLevels()
     calculateAntSacrificeELO()
     if (!auto) {
       antUpgradeDescription(index)

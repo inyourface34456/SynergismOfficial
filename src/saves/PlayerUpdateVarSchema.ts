@@ -1,3 +1,4 @@
+import Decimal from 'break_infinity.js'
 import { CorruptionLoadout, type Corruptions, CorruptionSaves } from '../Corruptions'
 import { getTalisman } from '../Talismans'
 import { convertArrayToCorruption } from './PlayerJsonSchema'
@@ -50,6 +51,16 @@ export const playerUpdateVarSchema = playerSchema.transform((player) => {
     getTalisman('polymath').updateResourcePredefinedLevel(player.talismanLevels[4])
     getTalisman('mortuus').updateResourcePredefinedLevel(player.talismanLevels[5])
     getTalisman('plastic').updateResourcePredefinedLevel(player.talismanLevels[6])
+  }
+
+  if (player.runeexp !== undefined) {
+    player.runes.speed = new Decimal(player.runeexp[0] ?? 0)
+    player.runes.duplication = new Decimal(player.runeexp[1] ?? 0)
+    player.runes.prism = new Decimal(player.runeexp[2] ?? 0)
+    player.runes.thrift = new Decimal(player.runeexp[3] ?? 0)
+    player.runes.superiorIntellect = new Decimal(player.runeexp[4] ?? 0)
+    player.runes.infiniteAscent = new Decimal(player.runeexp[5] ?? 0)
+    player.runes.antiquities = new Decimal(player.runeexp[6] ?? 0)
   }
 
   Reflect.deleteProperty(player, 'usedCorruptions')

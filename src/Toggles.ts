@@ -1,12 +1,12 @@
 import i18next from 'i18next'
 import { achievementaward } from './Achievements'
 import { DOMCacheGetOrSet } from './Cache/DOM'
-import { calculateRuneLevels } from './Calculate'
 import { getChallengeConditions } from './Challenges'
 import { corruptionDisplay, corruptionLoadoutTableUpdate, type Corruptions } from './Corruptions'
 import { renderCaptcha } from './Login'
 import { autoResearchEnabled } from './Research'
 import { reset, resetrepeat } from './Reset'
+import { indexToRune } from './Runes'
 import { format, player, resetCheck } from './Synergism'
 import { getActiveSubTab, subTabsInMainTab, Tabs } from './Tabs'
 import type { BuildingSubtab, Player } from './types/Synergism'
@@ -319,9 +319,8 @@ export const toggleAutoSacrifice = (index: number) => {
     }
   }
   for (let i = 1; i <= 5; i++) {
-    DOMCacheGetOrSet(`rune${i}`).style.backgroundColor = player.autoSacrifice === i ? 'orange' : ''
+    DOMCacheGetOrSet(`${indexToRune[i]}Rune`).style.backgroundColor = player.autoSacrifice === i ? 'orange' : ''
   }
-  calculateRuneLevels()
 }
 
 export const toggleAutoBuyFragment = () => {

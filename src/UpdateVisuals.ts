@@ -14,7 +14,6 @@ import {
   calculateBlueberryInventory,
   calculateCookieUpgrade29Luck,
   calculateCubeQuarkMultiplier,
-  calculateMaxRunes,
   calculateNumberOfThresholds,
   calculateOcteractMultiplier,
   calculateRecycleMultiplier,
@@ -26,7 +25,6 @@ import {
   calculateRequiredBlueberryTime,
   calculateRequiredRedAmbrosiaTime,
   calculateResearchAutomaticObtainium,
-  calculateRuneExpToLevel,
   calculateSigmoidExponential,
   calculateSummationLinear,
   calculateSummationNonLinear,
@@ -44,15 +42,14 @@ import { BuffType, consumableEventBuff, eventBuffType, getEvent, getEventBuff } 
 import type { hepteractTypes } from './Hepteracts'
 import { hepteractTypeList } from './Hepteracts'
 import { allDurableConsumables, type PseudoCoinConsumableNames } from './Login'
-import { PCoinUpgradeEffects } from './PseudoCoinUpgrades'
 import { getQuarkBonus, quarkHandler } from './Quark'
-import { displayRuneInformation } from './Runes'
+import { getRune, type RuneKeys } from './Runes'
 import { getShopCosts, isShopUpgradeUnlocked, shopData, shopUpgradeTypes } from './Shop'
 import { getGoldenQuarkCost } from './singularity'
 import { loadStatisticsUpdate } from './Statistics'
 import { format, formatTimeShort, player } from './Synergism'
 import { getActiveSubTab, Tabs } from './Tabs'
-import { getTalisman, getTalismanBonus, type TalismanKeys } from './Talismans'
+import { getTalisman, type TalismanKeys } from './Talismans'
 import type { Player, ZeroToFour } from './types/Synergism'
 import { sumContents, timeReminingHours } from './Utility'
 import { Globals as G } from './Variables'
@@ -563,49 +560,11 @@ export const visualUpdateRunes = () => {
       }
     )
 
-    for (let i = 1; i <= 7; i++) {
-      // First one updates level, second one updates TNL, third updates orange bonus levels
+    for (const key of Object.keys(player.runes)) {
+      const runeKey = key as RuneKeys
 
-      const runeLevel = player.runelevels[i - 1]
-      const maxLevel = calculateMaxRunes(i)
-      DOMCacheGetOrSet(`rune${i}level`).childNodes[0].textContent = i18next.t(
-        'cubes.cubeMetadata.level',
-        {
-          value1: format(runeLevel),
-          value2: format(maxLevel)
-        }
-      )
-
-      if (runeLevel < maxLevel) {
-        DOMCacheGetOrSet(`rune${i}exp`).textContent = i18next.t('runes.TNL', {
-          EXP: format(
-            calculateRuneExpToLevel(i - 1) - player.runeexp[i - 1],
-            2
-          )
-        })
-      } else {
-        DOMCacheGetOrSet(`rune${i}exp`).textContent = i18next.t('runes.maxLevel')
-      }
-      if (i <= 5) {
-        DOMCacheGetOrSet(`bonusrune${i}`).textContent = i18next.t(
-          'runes.bonusAmount',
-          {
-            x: format(
-              7 * Math.min(player.constantUpgrades[7], 1000)
-                + Math.min(1e7, player.antUpgrades[8]! + G.bonusant9)
-                + getTalismanBonus('speed') // FIX
-            )
-          }
-        )
-      } else if (i === 6) {
-        DOMCacheGetOrSet(`bonusrune${i}`).textContent = i18next.t('runes.bonusAmount', {
-          x: player.cubeUpgrades[73] + (PCoinUpgradeEffects.INSTANT_UNLOCK_2 ? 6 : 0) + player.campaigns.bonusRune6
-            + getTalismanBonus('IA')
-        })
-      } else {
-        DOMCacheGetOrSet(`bonusrune${i}`).textContent = i18next.t('runes.bonusNope')
-      }
-      displayRuneInformation(i, false)
+      getRune(runeKey).updateRuneHTML()
+      getRune(runeKey).updateRuneEffectHTML()
     }
 
     const calculateRecycle = calculateRecycleMultiplier()

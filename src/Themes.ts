@@ -96,7 +96,7 @@ export const toggleTheme = (initial = false, themeNumber = 1, change = false) =>
     DOMCacheGetOrSet('cube6Bonus').style.color = 'brown'
     DOMCacheGetOrSet('tesseract6Bonus').style.color = 'brown'
     DOMCacheGetOrSet('hypercube6Bonus').style.color = 'brown'
-    DOMCacheGetOrSet('runeshowpower5').style.color = 'tomato'
+    DOMCacheGetOrSet('superiorIntellectRunePower').style.color = 'tomato'
     DOMCacheGetOrSet('hypercubeWelcome').style.color = '#ff004c' // Hypercube colors
     DOMCacheGetOrSet('hypercubeQuantity').style.color = '#ff004c'
     DOMCacheGetOrSet('hypercubeBlessingsTotal').style.color = '#ff004c'
@@ -216,7 +216,7 @@ export const toggleTheme = (initial = false, themeNumber = 1, change = false) =>
     DOMCacheGetOrSet('hypercubeWelcome').style.color = '#f58'
     DOMCacheGetOrSet('hypercubeQuantity').style.color = '#f58'
     DOMCacheGetOrSet('hypercubeBlessingsTotal').style.color = '#f58'
-    DOMCacheGetOrSet('runeshowpower5').style.color = '#ff7158'
+    DOMCacheGetOrSet('superiorIntellectRunePower').style.color = '#ff7158'
 
     themeButton.textContent = 'Light Mode'
   } else if (themeNumber === 5) { // 'Dracula Mode'

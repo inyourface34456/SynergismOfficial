@@ -378,10 +378,19 @@ export const playerSchema = z.object({
   crystalUpgrades: z.number().array(),
   crystalUpgradesCost: z.number().array().default(() => [...blankSave.crystalUpgradesCost]),
 
-  runelevels: z.number().array().transform((array) => arrayExtend(array, 'runelevels')),
-  runeexp: z.union([z.number(), z.null().transform(() => 0)]).array().transform((value) =>
-    arrayExtend(value, 'runeexp')
-  ),
+  runes: z.record(z.string(), decimalSchema)
+    .transform((object) => {
+      return Object.fromEntries(
+        Object.keys(blankSave.runes).map((key) => {
+          const value = object[key] ?? blankSave.runes[key as keyof typeof blankSave['runes']]
+          return value === null ? [key, new Decimal('0')] : [key, new Decimal(value)]
+        })
+      )
+    })
+    .default(() => ({ ...blankSave.runes })),
+
+  runelevels: z.number().array().optional(),
+  runeexp: z.union([z.number(), z.null().transform(() => 0)]).array().optional(),
   runeshards: z.number(),
   maxofferings: z.number().default(() => blankSave.maxofferings),
   offeringpersecond: z.number().default(() => blankSave.offeringpersecond),

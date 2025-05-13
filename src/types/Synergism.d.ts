@@ -10,6 +10,7 @@ import type { OcteractUpgrade } from '../Octeracts'
 import type { IPlatBaseCost } from '../Platonic'
 import type { QuarkHandler } from '../Quark'
 import type { RedAmbrosiaKeys } from '../RedAmbrosiaUpgrades'
+import type { RuneKeys } from '../Runes'
 import type { SingularityUpgrade } from '../singularity'
 import type { SingularityChallenge, singularityChallengeData } from '../SingularityChallenges'
 import type { Tabs } from '../Tabs'
@@ -276,8 +277,8 @@ export interface Player {
   crystalUpgrades: number[]
   crystalUpgradesCost: number[]
 
-  runelevels: number[]
-  runeexp: number[]
+  runes: Record<RuneKeys, Decimal>
+
   runeshards: number
   maxofferings: number
   offeringpersecond: number
@@ -800,10 +801,6 @@ export interface GlobalVariables {
   maxexponent: number
 
   effectiveLevelMult: number
-  optimalOfferingTimer: number
-  optimalObtainiumTimer: number
-
-  runeSum: number
 
   globalAntMult: Decimal
   antMultiplier: Decimal
@@ -834,28 +831,6 @@ export interface GlobalVariables {
   bonusant10: number
   bonusant11: number
   bonusant12: number
-
-  rune1level: number
-  rune2level: number
-  rune3level: number
-  rune4level: number
-  rune5level: number
-  rune1Talisman: number
-  rune2Talisman: number
-  rune3Talisman: number
-  rune4Talisman: number
-  rune5Talisman: number
-
-  talisman1Effect: ArrayStartingWithNull<number>
-  talisman2Effect: ArrayStartingWithNull<number>
-  talisman3Effect: ArrayStartingWithNull<number>
-  talisman4Effect: ArrayStartingWithNull<number>
-  talisman5Effect: ArrayStartingWithNull<number>
-  talisman6Effect: ArrayStartingWithNull<number>
-  talisman7Effect: ArrayStartingWithNull<number>
-
-  talisman6Power: number
-  talisman7Quarks: number
 
   settingscreen: string
 

@@ -3,6 +3,7 @@ import { DOMCacheGetOrSet } from './Cache/DOM'
 import { campaignTokenRewardHTMLUpdate } from './Campaign'
 import type { IUpgradeData } from './DynamicUpgrade'
 import { DynamicUpgrade } from './DynamicUpgrade'
+import { getRune } from './Runes'
 import { format, player } from './Synergism'
 import type { Player } from './types/Synergism'
 import { Alert, Prompt, revealStuff } from './UpdateHTML'
@@ -108,7 +109,7 @@ export const updateSingularityPenalties = (): void => {
       })
   }
         ${
-    player.runelevels[6] > 0
+    getRune('antiquities').level > 0
       ? i18next.t('singularity.penalties.antiquitiesBought')
       : i18next.t('singularity.penalties.antiquitiesNotBought')
   }`
@@ -2785,7 +2786,7 @@ export const calculateSingularityDebuff = (
   if (singularityCount === 0) {
     return 1
   }
-  if (player.runelevels[6] > 0) {
+  if (getRune('antiquities').level > 0) {
     return 1
   }
 

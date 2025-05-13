@@ -14,8 +14,7 @@ import {
   calculateGoldenQuarks,
   calculateObtainium,
   calculateOfferings,
-  calculatePowderConversion,
-  calculateRuneLevels
+  calculatePowderConversion
 } from './Calculate'
 import {
   campaignCorruptionStatsHTMLReset,
@@ -42,7 +41,7 @@ import { calculateHypercubeBlessings } from './Hypercubes'
 import { importSynergism } from './ImportExport'
 import { autoBuyPlatonicUpgrades, updatePlatonicUpgradeBG } from './Platonic'
 import { buyResearch, updateResearchBG } from './Research'
-import { resetofferings } from './Runes'
+import { getRune, resetOfferings } from './Runes'
 import { playerJsonSchema } from './saves/PlayerJsonSchema'
 import { forceResetShopUpgrades, shopData } from './Shop'
 import { calculateSingularityDebuff, getFastForwardTotalMultiplier } from './singularity'
@@ -333,7 +332,7 @@ export const reset = (input: resetNames, fast = false, from = 'unknown') => {
 
   const obtainiumToGain = calculateObtainium()
 
-  resetofferings()
+  resetOfferings()
   resetUpgrades(1)
   player.coins = new Decimal('102')
   player.coinsThisPrestige = new Decimal('100')
@@ -567,7 +566,6 @@ export const reset = (input: resetNames, fast = false, from = 'unknown') => {
       buyResearch(player.autoResearch, true, linGrowth)
     }
 
-    calculateRuneLevels()
     calculateAnts()
   }
 
@@ -622,16 +620,14 @@ export const reset = (input: resetNames, fast = false, from = 'unknown') => {
     player.thirdCostParticles = new Decimal('1e4')
     player.fourthCostParticles = new Decimal('1e8')
     player.fifthCostParticles = new Decimal('1e16')
-    player.runeexp = [0, 0, 0, 0, 0, player.runeexp[5], player.runeexp[6]]
-    player.runelevels = [0, 0, 0, 0, 0, player.runelevels[5], player.runelevels[6]]
     player.runeshards = 0
     player.crystalUpgrades = [0, 0, 0, 0, 0, 0, 0, 0]
 
-    player.runelevels[0] = 3 * player.cubeUpgrades[26]
-    player.runelevels[1] = 3 * player.cubeUpgrades[26]
-    player.runelevels[2] = 3 * player.cubeUpgrades[26]
-    player.runelevels[3] = 3 * player.cubeUpgrades[26]
-    player.runelevels[4] = 3 * player.cubeUpgrades[26]
+    getRune('speed').resetRuneEXP()
+    getRune('duplication').resetRuneEXP()
+    getRune('prism').resetRuneEXP()
+    getRune('thrift').resetRuneEXP()
+    getRune('superiorIntellect').resetRuneEXP()
 
     if (player.cubeUpgrades[27] === 1) {
       player.firstOwnedParticles = 1
@@ -698,7 +694,6 @@ export const reset = (input: resetNames, fast = false, from = 'unknown') => {
     }
 
     calculateAnts()
-    calculateRuneLevels()
     calculateAntSacrificeELO()
     calculateObtainium()
     ascensionAchievementCheck(1)
@@ -1137,7 +1132,7 @@ export const updateSingularityGlobalPerks = () => {
 }
 
 export const singularity = (setSingNumber = -1) => {
-  if (player.runelevels[6] === 0 && setSingNumber === -1) {
+  if (getRune('antiquities').level === 0 && setSingNumber === -1) {
     Alert(
       'You nearly triggered a double singularity bug! Oh no! Luckily, our staff prevented this from happening.'
     )
@@ -1169,8 +1164,10 @@ export const singularity = (setSingNumber = -1) => {
     }
     resetHistoryAdd('singularity', historyEntry)
   }
-  // reset the rune instantly to hopefully prevent a double singularity
-  player.runelevels[6] = 0
+
+  // Reset IA and Antiquity runes.
+  getRune('infiniteAscent').resetRuneEXP()
+  getRune('antiquities').resetRuneEXP()
 
   player.goldenQuarks += calculateGoldenQuarks()
 
@@ -1498,7 +1495,7 @@ const resetUpgrades = (i: number) => {
     updateEffectiveLevelMult() // update before prism rune, fixes c15 bug
 
     let m = 0
-    m += Math.floor(G.rune3level * G.effectiveLevelMult / 16) * 100 / 100
+    m += getRune('prism').bonus.crystalLevels
     if (player.upgrades[73] > 0.5 && player.currentChallenge.reincarnation !== 0) {
       m += 10
     }
@@ -1556,7 +1553,6 @@ export const resetAnts = () => {
   }
 
   calculateAnts()
-  calculateRuneLevels()
 }
 
 export const getResetResearches = () => {

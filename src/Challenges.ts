@@ -1,7 +1,6 @@
 import Decimal from 'break_infinity.js'
 import i18next from 'i18next'
 import { DOMCacheGetOrSet } from './Cache/DOM'
-import { calculateRuneLevels } from './Calculate'
 import { hepteractEffective } from './Hepteracts'
 import { autoResearchEnabled } from './Research'
 import { format, player, resetCheck } from './Synergism'
@@ -404,11 +403,6 @@ export const challengeDisplay = (i: number, changefocus = true) => {
 
 export const getChallengeConditions = (i?: number) => {
   if (player.currentChallenge.reincarnation === 9) {
-    G.rune1level = 1
-    G.rune2level = 1
-    G.rune3level = 1
-    G.rune4level = 1
-    G.rune5level = 1
     player.crystalUpgrades = [0, 0, 0, 0, 0, 0, 0, 0]
   }
   G.prestigePointGain = new Decimal('0')
@@ -420,7 +414,6 @@ export const getChallengeConditions = (i?: number) => {
       G.reincarnationPointGain = new Decimal('0')
     }
   }
-  calculateRuneLevels()
 }
 
 export const toggleRetryChallenges = () => {

@@ -1,6 +1,6 @@
 import i18next from 'i18next'
 import { DOMCacheGetOrSet } from './Cache/DOM'
-import { calculateAnts, calculateRuneLevels, calculateSummationNonLinear } from './Calculate'
+import { calculateAnts, calculateSummationNonLinear } from './Calculate'
 import type { IMultiBuy } from './Cubes'
 import { getResetResearches } from './Reset'
 import { calculateSingularityDebuff } from './singularity'
@@ -123,8 +123,7 @@ export const buyResearch = (index: number, auto = false, linGrowth = 0, hover = 
       updateChallengeDisplay()
     }
 
-    // Update ants and runes.
-    calculateRuneLevels()
+    // Update ants.
     calculateAnts()
   }
 

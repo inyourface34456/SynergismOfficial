@@ -3,7 +3,8 @@ import i18next from 'i18next'
 import { buyAutobuyers, buyGenerator } from './Automation'
 import { buyUpgrades } from './Buy'
 import { DOMCacheGetOrSet } from './Cache/DOM'
-import { calculateAnts, calculateRuneLevels } from './Calculate'
+import { calculateAnts } from './Calculate'
+import { getRune } from './Runes'
 import { format, player } from './Synergism'
 import { revealStuff } from './UpdateHTML'
 import { sumContents } from './Utility'
@@ -413,7 +414,7 @@ const returnCrystalUpgEffect = (i: number) =>
 export const crystalupgradedescriptions = (i: number) => {
   const p = player.crystalUpgrades[i - 1]
   const c = (player.upgrades[73] > 0.5 && player.currentChallenge.reincarnation !== 0 ? 10 : 0)
-    + (Math.floor(G.rune3level * G.effectiveLevelMult / 16) * 100 / 100)
+    + getRune('prism').bonus.crystalLevels
 
   const q = Decimal.pow(
     10,
@@ -589,5 +590,4 @@ export const buyConstantUpgrades = (i: number, fast = false) => {
     }
   }
   calculateAnts()
-  calculateRuneLevels()
 }

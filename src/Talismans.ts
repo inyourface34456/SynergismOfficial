@@ -4,6 +4,7 @@ import { DOMCacheGetOrSet } from './Cache/DOM'
 import { formatAsPercentIncrease } from './Campaign'
 import { CalcECC } from './Challenges'
 import { PCoinUpgradeEffects } from './PseudoCoinUpgrades'
+import type { RuneKeys } from './Runes'
 import { format, player } from './Synergism'
 import { sumContents } from './Utility'
 
@@ -11,9 +12,6 @@ interface TalismanFragmentCost {
   obtainium: number
   offerings: number
 }
-
-// TEMPORARY: Eventually, we want to do something similar to runes
-export type Runes = 'speed' | 'duplication' | 'prism' | 'thrift' | 'SI' | 'IA'
 
 export type TalismanCraftItems =
   | 'shard'
@@ -55,7 +53,7 @@ const talismanResourceCosts: Record<TalismanCraftItems, TalismanFragmentCost> = 
   }
 }
 
-export type TalismanRuneBonus = Record<Runes, number>
+export type TalismanRuneBonus = Record<RuneKeys, number>
 
 interface BaseReward {
   inscriptionDesc: string
@@ -371,8 +369,9 @@ export class Talisman<K extends TalismanKeys> {
       duplication: this.talismanBaseCoefficient.duplication * rarityValue * this.level * specialMultiplier,
       prism: this.talismanBaseCoefficient.prism * rarityValue * this.level * specialMultiplier,
       thrift: this.talismanBaseCoefficient.thrift * rarityValue * this.level * specialMultiplier,
-      SI: this.talismanBaseCoefficient.SI * rarityValue * this.level * specialMultiplier,
-      IA: this.talismanBaseCoefficient.IA * rarityValue * this.level * specialMultiplier
+      superiorIntellect: this.talismanBaseCoefficient.superiorIntellect * rarityValue * this.level * specialMultiplier,
+      infiniteAscent: this.talismanBaseCoefficient.infiniteAscent * rarityValue * this.level * specialMultiplier,
+      antiquities: 0
     }
   }
 
@@ -445,21 +444,21 @@ export class Talisman<K extends TalismanKeys> {
       : (() => {
         DOMCacheGetOrSet('talismanThriftEffect').style.display = 'none'
       })()
-    this.runeBonuses.SI > 0
+    this.runeBonuses.superiorIntellect > 0
       ? (() => {
         sIHTML.style.display = 'block'
         sIHTML.innerHTML = i18next.t('runes.talismans.bonusRuneLevels.SI', {
-          x: format(this.runeBonuses.SI, 0, true)
+          x: format(this.runeBonuses.superiorIntellect, 0, true)
         })
       })()
       : (() => {
         DOMCacheGetOrSet('talismanSIEffect').style.display = 'none'
       })()
-    this.runeBonuses.IA > 0
+    this.runeBonuses.infiniteAscent > 0
       ? (() => {
         iAHTML.style.display = 'block'
         iAHTML.innerHTML = i18next.t('runes.talismans.bonusRuneLevels.IA', {
-          x: format(this.runeBonuses.IA, 2, true)
+          x: format(this.runeBonuses.infiniteAscent, 2, true)
         })
       })()
       : (() => {
@@ -529,7 +528,7 @@ export class Talisman<K extends TalismanKeys> {
 
   resetTalisman () {
     this.level = 0
-    this.fragmentsInvested = noTalismanFragments
+    this.fragmentsInvested = { ...noTalismanFragments }
     this.updatePlayerData()
   }
 
@@ -611,8 +610,9 @@ const talismanData: { [K in TalismanKeys]: TalismanData<K> } = {
       duplication: 1.5,
       prism: 0.75,
       thrift: 0.75,
-      SI: 0,
-      IA: 0
+      superiorIntellect: 0,
+      infiniteAscent: 0,
+      antiquities: 0
     }
   },
   chronos: {
@@ -635,8 +635,9 @@ const talismanData: { [K in TalismanKeys]: TalismanData<K> } = {
       duplication: 0,
       prism: 0,
       thrift: 0.75,
-      SI: 0.75,
-      IA: 0
+      superiorIntellect: 0.75,
+      infiniteAscent: 0,
+      antiquities: 0
     }
   },
   midas: {
@@ -659,8 +660,9 @@ const talismanData: { [K in TalismanKeys]: TalismanData<K> } = {
       duplication: 0.75,
       prism: 0.75,
       thrift: 1.5,
-      SI: 0,
-      IA: 0
+      superiorIntellect: 0,
+      infiniteAscent: 0,
+      antiquities: 0
     }
   },
   metaphysics: {
@@ -685,8 +687,9 @@ const talismanData: { [K in TalismanKeys]: TalismanData<K> } = {
       duplication: 0.6,
       prism: 0.6,
       thrift: 0.6,
-      SI: 0.6,
-      IA: 0
+      superiorIntellect: 0.6,
+      infiniteAscent: 0,
+      antiquities: 0
     }
   },
   polymath: {
@@ -709,8 +712,9 @@ const talismanData: { [K in TalismanKeys]: TalismanData<K> } = {
       duplication: 0.75,
       prism: 0,
       thrift: 0,
-      SI: 1.5,
-      IA: 0
+      superiorIntellect: 1.5,
+      infiniteAscent: 0,
+      antiquities: 0
     }
   },
   mortuus: {
@@ -733,8 +737,9 @@ const talismanData: { [K in TalismanKeys]: TalismanData<K> } = {
       duplication: 0.6,
       prism: 0.6,
       thrift: 0.6,
-      SI: 0.6,
-      IA: 0
+      superiorIntellect: 0.6,
+      infiniteAscent: 0,
+      antiquities: 0
     }
   },
   plastic: {
@@ -759,8 +764,9 @@ const talismanData: { [K in TalismanKeys]: TalismanData<K> } = {
       duplication: 0,
       prism: 1.5,
       thrift: 0,
-      SI: 0.75,
-      IA: 0.005
+      superiorIntellect: 0.75,
+      infiniteAscent: 0.005,
+      antiquities: 0
     }
   },
   wowSquare: {
@@ -784,8 +790,9 @@ const talismanData: { [K in TalismanKeys]: TalismanData<K> } = {
       duplication: 1,
       prism: 1,
       thrift: 0,
-      SI: 1,
-      IA: 0
+      superiorIntellect: 1,
+      infiniteAscent: 0,
+      antiquities: 0
     }
   }
 }
@@ -824,7 +831,7 @@ export function getTalisman<K extends TalismanKeys> (key: K): Talisman<K> {
   return talismans[key]
 }
 
-export const getTalismanBonus = (rune: Runes) => {
+export const getTalismanBonus = (rune: RuneKeys) => {
   let totalBonus = 0
   if (talismans === null) {
     return 0

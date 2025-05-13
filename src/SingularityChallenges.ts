@@ -2,6 +2,7 @@ import i18next from 'i18next'
 import { DOMCacheGetOrSet } from './Cache/DOM'
 import { calculateGoldenQuarks } from './Calculate'
 import { singularity } from './Reset'
+import { getRune } from './Runes'
 import { player } from './Synergism'
 import type { Player } from './types/Synergism'
 import { Alert, Confirm } from './UpdateHTML'
@@ -88,7 +89,7 @@ export class SingularityChallenge {
     if (!this.enabled) {
       return this.enableChallenge()
     } else {
-      return this.exitChallenge(player.runelevels[6] > 0)
+      return this.exitChallenge(getRune('antiquities').level > 0)
     }
   }
 
@@ -146,7 +147,7 @@ export class SingularityChallenge {
 
   public async exitChallenge (success: boolean) {
     if (!success) {
-      const extra = player.runelevels[6] === 0
+      const extra = getRune('antiquities').level === 0
         ? i18next.t('singularityChallenge.exitChallenge.incompleteWarning')
         : ''
       const confirmation = await Confirm(

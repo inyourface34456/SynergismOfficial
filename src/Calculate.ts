@@ -11,6 +11,7 @@ import { PCoinUpgradeEffects } from './PseudoCoinUpgrades'
 import { quarkHandler } from './Quark'
 import { getRedAmbrosiaUpgrade } from './RedAmbrosiaUpgrades'
 import { reset } from './Reset'
+import { getRune, indexToRune, sumOfRuneLevels } from './Runes'
 import {
   allAdditiveLuckMultStats,
   allAmbrosiaBlueberryStats,
@@ -44,7 +45,7 @@ import {
   offeringObtainiumTimeModifiers
 } from './Statistics'
 import { format, getTimePinnedToLoadDate, player, resourceGain, saveSynergy, updateAll } from './Synergism'
-import { getTalisman, getTalismanBonus, type Runes, toggleTalismanBuy, updateTalismanInventory } from './Talismans'
+import { getTalisman, toggleTalismanBuy, updateTalismanInventory } from './Talismans'
 import { clearInterval, setInterval } from './Timers'
 import { Alert, Prompt } from './UpdateHTML'
 import { findInsertionIndex, productContents, sumContents } from './Utility'
@@ -489,13 +490,9 @@ export const calculateTotalAcceleratorBoost = () => {
   b += player.researches[93]
     * Math.floor(
       (1 / 20)
-        * (G.rune1level
-          + G.rune2level
-          + G.rune3level
-          + G.rune4level
-          + G.rune5level)
+        * sumOfRuneLevels()
     )
-  b += Math.floor(((0.01 + G.rune1level) * G.effectiveLevelMult) / 20)
+  b += getRune('speed').bonus.accelBoosts
   b *= 1
     + (1 / 5)
       * player.researches[3]
@@ -579,249 +576,14 @@ export const calculateRecycleMultiplier = () => {
     0.075 * player.achievements[122],
     0.075 * player.achievements[129],
     0.05 * player.upgrades[61],
-    0.25 * Math.min(1, G.rune4level / 400),
+    getRune('thrift').bonus.recycleChance,
     0.005 * player.cubeUpgrades[2]
   ])
 
   return 1 / (1 - recycleFactors)
 }
 
-export function calculateRuneExpGiven (
-  runeIndex: number,
-  all: boolean,
-  runeLevel: number,
-  returnFactors: true
-): number[]
-export function calculateRuneExpGiven (
-  runeIndex: number,
-  all: boolean,
-  runeLevel?: number,
-  returnFactors?: false
-): number
-export function calculateRuneExpGiven (
-  runeIndex: number,
-  all = false,
-  runeLevel = player.runelevels[runeIndex],
-  returnFactors = false
-) {
-  // recycleMult accounted for all recycle chance, but inversed so it's a multiplier instead
-  const recycleMultiplier = calculateRecycleMultiplier()
-
-  // Rune multiplier that is summed instead of added
-  let allRuneExpAdditiveMultiplier: number | null = null
-  if (all) {
-    allRuneExpAdditiveMultiplier = sumContents([
-      // Challenge 3 completions
-      (1 / 100) * player.highestchallengecompletions[3],
-      // Reincarnation 2x1
-      1 * player.upgrades[66]
-    ])
-  } else {
-    allRuneExpAdditiveMultiplier = sumContents([
-      // Base amount multiplied per offering
-      1,
-      // +1 if C1 completion
-      Math.min(1, player.highestchallengecompletions[1]),
-      // +0.10 per C1 completion
-      (0.4 / 10) * player.highestchallengecompletions[1],
-      // Research 5x2
-      0.6 * player.researches[22],
-      // Research 5x3
-      0.3 * player.researches[23],
-      // Particle Upgrade 1x1
-      2 * player.upgrades[61],
-      // Particle upgrade 3x1
-      (player.upgrades[71] * runeLevel) / 25
-    ])
-  }
-
-  // Rune multiplier that gets applied to all runes
-  const allRuneExpMultiplier = productContents([
-    // Research 4x16
-    1 + player.researches[91] / 20,
-    // Research 4x17
-    1 + player.researches[92] / 20,
-    // Ant 8
-    calculateSigmoidExponential(
-      999,
-      (1 / 10000) * Math.pow(player.antUpgrades[8 - 1]! + G.bonusant8, 1.1)
-    ),
-    // Cube Bonus
-    G.cubeBonusMultiplier[4],
-    // Cube Upgrade Bonus
-    1 + (player.ascensionCounter / 1000) * player.cubeUpgrades[32],
-    // Constant Upgrade Multiplier
-    1 + (1 / 10) * player.constantUpgrades[8],
-    // Challenge 15 reward multiplier
-    G.challenge15Rewards.runeExp.value
-  ])
-  // Corruption Divisor
-  const droughtEffect = 1
-    / Math.pow(
-      G.droughtMultiplier[player.corruptions.used.drought],
-      1 - (1 / 2) * player.platonicUpgrades[13]
-    )
-
-  // Rune multiplier that gets applied to specific runes
-  const runeExpMultiplier = [
-    productContents([
-      1 + player.researches[78] / 50,
-      1 + player.researches[111] / 100,
-      1 + CalcECC('reincarnation', player.challengecompletions[7]) / 10,
-      droughtEffect
-    ]),
-    productContents([
-      1 + player.researches[80] / 50,
-      1 + player.researches[112] / 100,
-      1 + CalcECC('reincarnation', player.challengecompletions[7]) / 10,
-      droughtEffect
-    ]),
-    productContents([
-      1 + player.researches[79] / 50,
-      1 + player.researches[113] / 100,
-      1 + CalcECC('reincarnation', player.challengecompletions[8]) / 5,
-      droughtEffect
-    ]),
-    productContents([
-      1 + player.researches[77] / 50,
-      1 + player.researches[114] / 100,
-      1 + CalcECC('reincarnation', player.challengecompletions[6]) / 10,
-      droughtEffect
-    ]),
-    productContents([
-      1 + player.researches[83] / 20,
-      1 + player.researches[115] / 100,
-      1 + CalcECC('reincarnation', player.challengecompletions[9]) / 5,
-      droughtEffect
-    ]),
-    productContents([1]),
-    productContents([1])
-  ]
-
-  const fact = [
-    allRuneExpAdditiveMultiplier,
-    allRuneExpMultiplier,
-    recycleMultiplier,
-    runeExpMultiplier[runeIndex]
-  ]
-
-  return returnFactors ? fact : Math.min(1e200, productContents(fact))
-}
-
-export const lookupTableGen = (runeLevel: number) => {
-  // Rune exp required to level multipliers
-  const allRuneExpRequiredMultiplier = productContents([
-    Math.pow((runeLevel + 1) / 2, 3),
-    (3.5 * runeLevel + 100) / 500,
-    Math.max(1, (runeLevel - 200) / 9),
-    Math.max(1, (runeLevel - 400) / 12),
-    Math.max(1, (runeLevel - 600) / 15),
-    Math.max(1, Math.pow(1.03, (runeLevel - 800) / 4))
-  ])
-
-  return allRuneExpRequiredMultiplier
-}
-
-let lookupTableRuneExp: number[] | null = null
-
-// Returns the amount of exp required to level a rune
-export const calculateRuneExpToLevel = (
-  runeIndex: number,
-  runeLevel = player.runelevels[runeIndex]
-) => {
-  lookupTableRuneExp ??= Array.from({ length: 40000 + 1 }, (_, i) => lookupTableGen(i))
-
-  // For runes 6 and 7 we will apply a special multiplier
-  let multiplier = lookupTableRuneExp[runeLevel]
-  if (runeIndex === 5) {
-    multiplier = Math.pow(100, runeLevel)
-  }
-  if (runeIndex === 6) {
-    multiplier = Math.pow(1e25, runeLevel) * (player.highestSingularityCount + 1)
-  }
-  return multiplier * G.runeexpbase[runeIndex]
-}
-
-export const calculateMaxRunes = (i: number) => {
-  let max = 1000
-
-  const increaseAll = 20 * (player.cubeUpgrades[16] + player.cubeUpgrades[37])
-    + 3 * player.constantUpgrades[7]
-    + 80 * CalcECC('ascension', player.challengecompletions[11])
-    + 200 * CalcECC('ascension', player.challengecompletions[14])
-    + Math.floor(0.04 * player.researches[200] + 0.04 * player.cubeUpgrades[50])
-  const increaseMaxLevel = [
-    null,
-    10 * (player.researches[78] + player.researches[111]) + increaseAll,
-    10 * (player.researches[80] + player.researches[112]) + increaseAll,
-    10 * (player.researches[79] + player.researches[113]) + increaseAll,
-    10 * (player.researches[77] + player.researches[114]) + increaseAll,
-    10 * player.researches[115] + increaseAll,
-    -901,
-    -999
-  ]
-
-  max = increaseMaxLevel[i]! > G.runeMaxLvl
-    ? G.runeMaxLvl
-    : max + increaseMaxLevel[i]!
-  return max
-}
-
-export const calculateEffectiveIALevel = () => {
-  let bonus = PCoinUpgradeEffects.INSTANT_UNLOCK_2 ? 6 : 0
-  bonus += player.cubeUpgrades[73]
-  bonus += player.campaigns.bonusRune6
-  bonus += getTalismanBonus('IA')
-  const totalRawLevel = player.runelevels[5] + bonus
-  return (
-    totalRawLevel
-    + Math.max(0, totalRawLevel - 74)
-    + Math.max(0, totalRawLevel - 98)
-  )
-}
-
-export const calculateFreeRuneLevels = (r: Runes) => {
-  return sumContents([
-    Math.min(1e7, player.antUpgrades[8] ?? 0 + G.bonusant9),
-    getTalismanBonus(r),
-    7 * Math.min(player.constantUpgrades[7], 1000)
-  ])
-}
-
-export const calculateRuneLevels = () => {
-  if (player.currentChallenge.reincarnation !== 9) {
-    G.rune1level = Math.max(
-      1,
-      player.runelevels[0] + calculateFreeRuneLevels('speed')
-    )
-    G.rune2level = Math.max(
-      1,
-      player.runelevels[1] + calculateFreeRuneLevels('duplication')
-    )
-    G.rune3level = Math.max(
-      1,
-      player.runelevels[2] + calculateFreeRuneLevels('prism')
-    )
-    G.rune4level = Math.max(
-      1,
-      player.runelevels[3] + calculateFreeRuneLevels('thrift')
-    )
-    G.rune5level = Math.max(
-      1,
-      player.runelevels[4] + calculateFreeRuneLevels('SI')
-    )
-  }
-
-  G.runeSum = sumContents([
-    G.rune1level,
-    G.rune2level,
-    G.rune3level,
-    G.rune4level,
-    G.rune5level
-  ])
-  calculateRuneBonuses()
-}
-
+// TODO: Refactor this in the s0 update -PLATONIC
 export const calculateRuneBonuses = () => {
   G.blessingMultiplier = 1
   G.spiritMultiplier = 1
@@ -843,10 +605,10 @@ export const calculateRuneBonuses = () => {
 
   for (let i = 1; i <= 5; i++) {
     G.runeBlessings[i] = G.blessingMultiplier
-      * player.runelevels[i - 1]
+      * getRune(indexToRune[i]).level
       * player.runeBlessingLevels[i]
     G.runeSpirits[i] = G.spiritMultiplier
-      * player.runelevels[i - 1]
+      * getRune(indexToRune[i]).level
       * player.runeSpiritLevels[i]
   }
 
@@ -1445,7 +1207,6 @@ export const calculateOffline = (forceTime = 0, fromTips = false) => {
   updateTalismanInventory()
   calculateObtainium()
   calculateAnts()
-  calculateRuneLevels()
 
   // allow aesthetic offline progress
   if (offlineDialog) {
@@ -1541,7 +1302,6 @@ export const calculateCubeBlessings = () => {
           * G.tesseractBonusMultiplier[i]!
     )
   }
-  calculateRuneLevels()
   calculateAntSacrificeELO()
 }
 

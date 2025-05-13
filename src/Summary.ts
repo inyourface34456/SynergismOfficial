@@ -7,15 +7,14 @@ import {
   calculateAscensionSpeedMult,
   calculateGlobalSpeedMult,
   calculateGoldenQuarks,
-  calculateMaxRunes,
   calculateOcteractMultiplier,
   calculateTotalOcteractCubeBonus,
-  calculateTotalOcteractQuarkBonus,
-  isIARuneUnlocked
+  calculateTotalOcteractQuarkBonus
 } from './Calculate'
 import { getMaxChallenges } from './Challenges'
 import { version } from './Config'
 import { saveFilename } from './ImportExport'
+import { getRune, type RuneKeys } from './Runes'
 import { friendlyShopName, isShopUpgradeUnlocked, shopData, shopUpgradeTypes } from './Shop'
 import { calculateEffectiveSingularities } from './singularity'
 import { format, player } from './Synergism'
@@ -151,7 +150,7 @@ export const generateExportSummary = async (): Promise<void> => {
     singularity = `${singularity}Effective Singularity [for penalties]: ${
       format(calculateEffectiveSingularities(), 2, true)
     }\n`
-    singularity = `${singularity}Antiquity of Ant God Upgraded: ${(player.runelevels[6] > 0) ? '✔' : '✖'}\n`
+    singularity = `${singularity}Antiquity of Ant God Upgraded: ${(getRune('antiquities').level > 0) ? '✔' : '✖'}\n`
   }
 
   // Ascension Subportion!
@@ -273,38 +272,14 @@ export const generateExportSummary = async (): Promise<void> => {
         z: (100 * player.achievementPoints / totalachievementpoints).toPrecision(4)
       })
     }\n`
-    prestige = `${prestige}Speed Rune: Level ${format(player.runelevels[0], 0, true)}/${
-      format(calculateMaxRunes(1))
-    } [Bonus: ${format(G.rune1level - player.runelevels[0], 0, true)}]\n`
-    if (player.achievements[38] > 0 || player.highestSingularityCount > 0) {
-      prestige = `${prestige}Duplication Rune: Level ${format(player.runelevels[1], 0, true)}/${
-        format(calculateMaxRunes(2))
-      } [Bonus: ${format(G.rune2level - player.runelevels[1], 0, true)}]\n`
-    }
-    if (player.achievements[44] > 0 || player.highestSingularityCount > 0) {
-      prestige = `${prestige}Prism Rune: Level ${format(player.runelevels[2], 0, true)}/${
-        format(calculateMaxRunes(3))
-      } [Bonus: ${format(G.rune3level - player.runelevels[2], 0, true)}]\n`
-    }
-    if (player.achievements[102] > 0 || player.highestSingularityCount > 0) {
-      prestige = `${prestige}Thrift Rune: Level ${format(player.runelevels[3], 0, true)}/${
-        format(calculateMaxRunes(4))
-      } [Bonus: ${format(G.rune4level - player.runelevels[3], 0, true)}]\n`
-    }
-    if (player.researches[82] > 0 || player.highestSingularityCount > 0) {
-      prestige = `${prestige}Superior Intellect: Level ${format(player.runelevels[4], 0, true)}/${
-        format(calculateMaxRunes(5))
-      } [Bonus: ${format(G.rune5level - player.runelevels[4], 0, true)}]\n`
-    }
-    if (isIARuneUnlocked() || player.highestSingularityCount > 0) {
-      prestige = `${prestige}Infinite Ascent: Level ${format(player.runelevels[5], 0, true)}/${
-        format(calculateMaxRunes(6))
-      }\n`
-    }
-    if (player.platonicUpgrades[20] > 0 || player.highestSingularityCount > 0) {
-      prestige = `${prestige}Antiquities: Level ${format(player.runelevels[6], 0, true)}/${
-        format(calculateMaxRunes(7))
-      }\n`
+
+    for (const rune of Object.keys(player.runes)) {
+      const runeKey = rune as RuneKeys
+      if (getRune(runeKey).isUnlocked) {
+        prestige = `${prestige}${getRune(runeKey).name}: Level ${format(getRune(runeKey).level, 0, true)} [+${
+          format(getRune(runeKey).freeLevels, 0, true)
+        }]\n`
+      }
     }
   }
 

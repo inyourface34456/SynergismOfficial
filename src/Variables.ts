@@ -235,10 +235,6 @@ export const Globals: GlobalVariables = {
   maxexponent: 10000,
 
   effectiveLevelMult: 1,
-  optimalOfferingTimer: 600,
-  optimalObtainiumTimer: 3600,
-
-  runeSum: 0,
 
   globalAntMult: new Decimal('1'),
   antMultiplier: new Decimal('1'),
@@ -269,28 +265,6 @@ export const Globals: GlobalVariables = {
   bonusant10: 0,
   bonusant11: 0,
   bonusant12: 0,
-
-  rune1level: 1,
-  rune2level: 1,
-  rune3level: 1,
-  rune4level: 1,
-  rune5level: 1,
-  rune1Talisman: 0,
-  rune2Talisman: 0,
-  rune3Talisman: 0,
-  rune4Talisman: 0,
-  rune5Talisman: 0,
-
-  talisman1Effect: [null, 0, 0, 0, 0, 0],
-  talisman2Effect: [null, 0, 0, 0, 0, 0],
-  talisman3Effect: [null, 0, 0, 0, 0, 0],
-  talisman4Effect: [null, 0, 0, 0, 0, 0],
-  talisman5Effect: [null, 0, 0, 0, 0, 0],
-  talisman6Effect: [null, 0, 0, 0, 0, 0],
-  talisman7Effect: [null, 0, 0, 0, 0, 0],
-
-  talisman6Power: 0,
-  talisman7Quarks: 0,
 
   settingscreen: 'settings',
 
@@ -408,7 +382,25 @@ export const Globals: GlobalVariables = {
     0
   ],
   extinctionMultiplier: [1, 0.92, 0.86, 0.8, 0.74, 0.65, 0.55, 0.5, 0.45, 0.4, 0.35, 0.3, 0.1, 0, 0, 0, 0],
-  droughtMultiplier: [1, 5, 25, 200, 1e4, 1e7, 1e11, 1e16, 1e22, 1e30, 1e40, 1e55, 1e80, 1e120, 1e177, 1e200, 1e250],
+  droughtMultiplier: [
+    1,
+    1 / 5,
+    1 / 25,
+    1 / 200,
+    1 / 1e4,
+    1 / 1e7,
+    1 / 1e11,
+    1 / 1e16,
+    1 / 1e22,
+    1 / 1e30,
+    1 / 1e40,
+    1 / 1e55,
+    1 / 1e80,
+    1 / 1e120,
+    1 / 1e177,
+    1 / 1e200,
+    1 / 1e250
+  ],
   recessionPower: [
     1,
     0.9,

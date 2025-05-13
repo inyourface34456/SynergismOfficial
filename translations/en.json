@@ -3568,6 +3568,48 @@
     "recycleChance": "You have {{percent}}% chance of recycling your offerings. This multiplies EXP gain by {{mult}}!",
     "hover": "Hey, hover over a rune icon to get details on what each one does and what benefits they're giving you!",
     "thanksResearches": "Thanks to researches, your effective levels are increased by {{percent}}%",
+    "speed": {
+      "name": "Speed Rune",
+      "description": "An energy eminates from this stone. You feel compelled to inscribe power into it with your Offerings.",
+      "values": "+(Level/4)^1.25 Accelerator, +0.25% Accelerators per level. +1 Accelerator Boost every 20 levels!",
+      "effect": "Speed Rune Bonus: +{{val}} Accelerators, +{{val2}}% Accelerators, +{{val3}} Accelerator Boosts."
+    },
+    "duplication": {
+      "name": "Duplication Rune",
+      "description": "With this many diamonds, surely you live in a post-scarcity world. Let's counterfeit anyway!",
+      "values": "+(Level/10) Multipliers every 10th level, +0.25% Multipliers per level. Tax growth is delayed more for each level!",
+      "effect": "Duplication Rune Bonus: +{{val}} Multipliers, +{{val2}}% Multipliers, -{{val3}}% Tax Growth."
+    },
+    "prism": {
+      "name": "Prism Rune",
+      "description": "You're in the high-fidelity first class traveling set.",
+      "values": "~(1 + (Level/2)^2 * 2^(Level/2) / 256)x Crystal Production. +1 free level for each Crystal upgrade per 16 levels!",
+      "effect": "Prism Rune Bonus: All Crystal Producer production multiplied by {{val}}x, gain +{{val2}}' free crystal levels."
+    },
+    "thrift": {
+      "name": "Thrift Rune",
+      "description": "It seems with this rune in tow, you keep making great deals on your purchases, and your Offerings are just a little more reusable.",
+      "values": "+0.125% building cost growth delay per level, +0.0625% Offering recycle chance per level [MAX: 25%], 2^((1000 - Level)/1100) Tax growth multiplier AFTER level 400",
+      "effect": "Thrift Rune Bonus: Delay all producer cost increases by {{val}}%, Offering recycle chance: +{{val2}}%. -{{val3}}% Tax Growth"
+    },
+    "superiorIntellect": {
+      "name": "Superior Intellect",
+      "description": "Over a hundred times the number of brain cells the average human has, put into one rock. It's probably sentient.",
+      "values": "~(1 + level/200)x Obtainium, (1 + Level^2/2500)x Ant Hatch Speed, (1 + level/2000)x Offerings",
+      "effect": "S. Intellect Rune Bonus: Obtainium gain x{{val}}, Ant Speed: x{{val2}}. Offerings x{{val3}}"
+    },
+    "infiniteAscent": {
+      "name": "Infinite Ascent",
+      "description": "A staircase you can only climb facing backwards, how weird is that?",
+      "values": "+0.2% Quarks, +1% all Cube types per level! Start with +10% Quarks.",
+      "effect": "IA Rune Bonus: Quark Gain +{{val}}%, Ascensions give +{{val2}}% more of all cube types."
+    },
+    "antiquities": {
+      "name": "Antiquities of Ant God",
+      "description": "The piece of eight, long thought lost, no longer. It went there and back again.",
+      "values": "I wonder what happens if you feed it your Offerings.",
+      "effect": "You cannot grasp the true form of Ant God's antiques. [Addition itself takes {{val}}% as long]"
+    },
     "levelup": {
       "1": "+(Level/4)^1.25 Accelerator, +0.25% Accelerators per level. +1 Accelerator Boost every 20 levels!",
       "2": "+(Level/10) Multipliers every 10th level, +0.25% Multipliers per level. Tax growth is delayed more for each level!",
@@ -3765,6 +3807,9 @@
       "IA": "Infinite Ascent",
       "AOAG": "Antiquities of Ant God"
     },
+    "level": "Level {{x}}",
+    "freeLevels": "[+{{x}}]",
+    "offeringText": "+{{exp}} EXP per Offering - [{{offeringReq}}] Offerings to next level.",
     "maxLevel": "Maxed Level!",
     "TNL": "+1 in {{EXP}} EXP"
   },

@@ -6,14 +6,13 @@ import {
   CalcCorruptionStuff,
   calculateAscensionSpeedMult,
   calculateGlobalSpeedMult,
-  isIARuneUnlocked,
   isShopTalismanUnlocked
 } from './Calculate'
 import { getMaxChallenges } from './Challenges'
 import { revealCorruptions } from './Corruptions'
 import { initializeCart } from './purchases/CartTab'
 import { autoResearchEnabled } from './Research'
-import { displayRuneInformation } from './Runes'
+import { getRune, type RuneKeys } from './Runes'
 import { updateSingularityPenalties, updateSingularityPerks } from './singularity'
 import { format, formatTimeShort, /*formatTimeShort*/ player } from './Synergism'
 import { getActiveSubTab, Tabs } from './Tabs'
@@ -170,12 +169,14 @@ export const revealStuff = () => {
     DOMCacheGetOrSet('autotranscend').style.display = 'none'
   }
 
-  if (player.achievements[38] === 1) { // Prestige Diamond Achievement 3
-    DOMCacheGetOrSet('rune2area').style.display = 'flex'
-    DOMCacheGetOrSet('runeshowpower2').style.display = 'block'
-  } else {
-    DOMCacheGetOrSet('rune2area').style.display = 'none'
-    DOMCacheGetOrSet('runeshowpower2').style.display = 'none'
+  for (const rune of Object.keys(player.runes) as RuneKeys[]) {
+    if (getRune(rune).isUnlocked) {
+      DOMCacheGetOrSet(`${rune}RuneContainer`).style.display = 'flex'
+      DOMCacheGetOrSet(`${rune}RunePower`).style.display = 'block'
+    } else {
+      DOMCacheGetOrSet(`${rune}RuneContainer`).style.display = 'none'
+      DOMCacheGetOrSet(`${rune}RunePower`).style.display = 'none'
+    }
   }
 
   if (player.achievements[43] === 1) { // Transcend Mythos Achievement 1
@@ -186,22 +187,6 @@ export const revealStuff = () => {
     DOMCacheGetOrSet('prestigeautotoggle').style.display = 'none'
     DOMCacheGetOrSet('prestigeamount').style.display = 'none'
     DOMCacheGetOrSet('autoprestige').style.display = 'none'
-  }
-
-  if (player.achievements[44] === 1) { // Transcend Mythos Achievement 2
-    DOMCacheGetOrSet('rune3area').style.display = 'flex'
-    DOMCacheGetOrSet('runeshowpower3').style.display = 'block'
-  } else {
-    DOMCacheGetOrSet('rune3area').style.display = 'none'
-    DOMCacheGetOrSet('runeshowpower3').style.display = 'none'
-  }
-
-  if (player.achievements[102] === 1) { // Cost+ Challenge Achievement 4
-    DOMCacheGetOrSet('rune4area').style.display = 'flex'
-    DOMCacheGetOrSet('runeshowpower4').style.display = 'block'
-  } else {
-    DOMCacheGetOrSet('rune4area').style.display = 'none'
-    DOMCacheGetOrSet('runeshowpower4').style.display = 'none'
   }
 
   player.achievements[119] === 1 // Tax+ Challenge Achievement 7
@@ -247,14 +232,6 @@ export const revealStuff = () => {
   player.researches[46] > 0 // 5x6 Research [Auto R.]
     ? DOMCacheGetOrSet('reincarnateautomation').style.display = 'block'
     : DOMCacheGetOrSet('reincarnateautomation').style.display = 'none'
-
-  if (player.researches[82] > 0) { // 2x17 Research [SI Rune Unlock]
-    DOMCacheGetOrSet('rune5area').style.display = 'flex'
-    DOMCacheGetOrSet('runeshowpower5').style.display = 'block'
-  } else {
-    DOMCacheGetOrSet('rune5area').style.display = 'none'
-    DOMCacheGetOrSet('runeshowpower5').style.display = 'none'
-  }
 
   if (player.researches[124] > 0) { // 5x24 Research [AutoSac]
     DOMCacheGetOrSet('antSacrificeButtons').style.display = 'flex'
@@ -321,22 +298,6 @@ export const revealStuff = () => {
   player.cubeUpgrades[8] > 0
     ? DOMCacheGetOrSet('reincarnateAutoUpgrade').style.display = 'block'
     : DOMCacheGetOrSet('reincarnateAutoUpgrade').style.display = 'none'
-
-  if (isIARuneUnlocked()) {
-    DOMCacheGetOrSet('rune6area').style.display = 'flex'
-    DOMCacheGetOrSet('runeshowpower6').style.display = 'block'
-  } else {
-    DOMCacheGetOrSet('rune6area').style.display = 'none'
-    DOMCacheGetOrSet('runeshowpower6').style.display = 'none'
-  }
-
-  if (player.platonicUpgrades[20] > 0) {
-    DOMCacheGetOrSet('rune7area').style.display = 'flex'
-    DOMCacheGetOrSet('runeshowpower7').style.display = 'block'
-  } else {
-    DOMCacheGetOrSet('rune7area').style.display = 'none'
-    DOMCacheGetOrSet('runeshowpower7').style.display = 'none'
-  }
 
   player.highestSingularityCount > 0 // Save Offerings
     ? DOMCacheGetOrSet('saveOffToggle').style.display = 'block'
@@ -434,7 +395,7 @@ export const revealStuff = () => {
     ? 'flex'
     : 'none'
 
-  player.runelevels[6] > 0 || player.highestSingularityCount > 0
+  getRune('antiquities').level > 0 || player.highestSingularityCount > 0
     ? (DOMCacheGetOrSet('singularitybtn').style.display = 'block')
     : (DOMCacheGetOrSet('singularitybtn').style.display = 'none')
 
@@ -583,17 +544,16 @@ export const hideStuff = () => {
   } else if (G.currentTab === Tabs.Runes) {
     DOMCacheGetOrSet('runes').style.display = 'block'
     DOMCacheGetOrSet('runestab').style.backgroundColor = 'blue'
-    DOMCacheGetOrSet('runeshowlevelup').textContent = i18next.t('runes.hover')
+    DOMCacheGetOrSet('focusedRuneLevelInfo').textContent = i18next.t('runes.hover')
     DOMCacheGetOrSet('researchrunebonus').textContent = i18next.t('runes.thanksResearches', {
       percent: format(100 * G.effectiveLevelMult - 100, 4, true)
     })
-    displayRuneInformation(1, false)
-    displayRuneInformation(2, false)
-    displayRuneInformation(3, false)
-    displayRuneInformation(4, false)
-    displayRuneInformation(5, false)
-    displayRuneInformation(6, false)
-    displayRuneInformation(7, false)
+
+    for (const rune of Object.keys(player.runes)) {
+      const runeKey = rune as RuneKeys
+      getRune(runeKey).updateRuneHTML()
+      getRune(runeKey).updateRuneEffectHTML()
+    }
   }
   if (G.currentTab === Tabs.Challenges) {
     DOMCacheGetOrSet('challenges').style.display = 'block'
@@ -726,7 +686,7 @@ export const buttoncolorchange = () => {
   DOMCacheGetOrSet('ascendbtn').style.backgroundColor =
     player.autoAscend && player.challengecompletions[11] > 0 && player.cubeUpgrades[10] > 0 ? 'green' : ''
 
-  DOMCacheGetOrSet('singularitybtn').style.filter = player.runelevels[6] > 0
+  DOMCacheGetOrSet('singularitybtn').style.filter = getRune('antiquities').level > 0
     ? ''
     : 'contrast(1.25) sepia(1) grayscale(0.25)'
 
@@ -816,7 +776,7 @@ export const buttoncolorchange = () => {
       ? e.classList.add('buildingPurchaseBtnAvailable')
       : e.classList.remove('buildingPurchaseBtnAvailable')
     let k = 0
-    k += Math.floor(G.rune3level / 16 * G.effectiveLevelMult) * 100 / 100
+    k += getRune('prism').bonus.crystalLevels
     if (player.upgrades[73] === 1 && player.currentChallenge.reincarnation !== 0) {
       k += 10
     }
@@ -880,10 +840,12 @@ export const buttoncolorchange = () => {
 
   if (G.currentTab === Tabs.Runes) {
     if (getActiveSubTab() === 0) {
-      for (let i = 1; i <= 7; i++) {
-        player.runeshards > 0.5
-          ? DOMCacheGetOrSet(`activaterune${i}`).classList.add('runeButtonAvailable')
-          : DOMCacheGetOrSet(`activaterune${i}`).classList.remove('runeButtonAvailable')
+      for (const rune of Object.keys(player.runes)) {
+        if (player.runeshards > 0) {
+          DOMCacheGetOrSet(`${rune}RuneSacrifice`).classList.add('runeButtonAvailable')
+        } else {
+          DOMCacheGetOrSet(`${rune}RuneSacrifice`).classList.remove('runeButtonAvailable')
+        }
       }
     }
     if (getActiveSubTab() === 1) {

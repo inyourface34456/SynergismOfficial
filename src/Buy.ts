@@ -6,6 +6,7 @@ import { DOMCacheGetOrSet } from './Cache/DOM'
 import { calculateRuneBonuses, calculateSummationLinear } from './Calculate'
 import { CalcECC } from './Challenges'
 import { reset } from './Reset'
+import { getRune } from './Runes'
 import { format, player, updateAllMultiplier, updateAllTick } from './Synergism'
 import type { FirstToFifth, OneToFive, ZeroToFour } from './types/Synergism'
 import { crystalupgradedescriptions, upgradeupdate } from './Upgrades'
@@ -14,7 +15,7 @@ import { Globals as G, Upgrade } from './Variables'
 
 export const getReductionValue = () => {
   let reduction = 1
-  reduction += Math.min(1e15, (G.rune4level * G.effectiveLevelMult) / 160)
+  reduction += getRune('thrift').bonus.costDelay
   reduction += (player.researches[56] + player.researches[57] + player.researches[58] + player.researches[59]
     + player.researches[60]) / 200
   reduction += CalcECC('transcend', player.challengecompletions[4]) / 200
@@ -603,7 +604,7 @@ export const buyProducer = (
   const [tag, amounttype] = buyProducerTypes[type]
   const buythisamount = autobuyer ? 500 : player[`${amounttype}buyamount` as const]
   let r = 1
-  r += (G.rune4level * G.effectiveLevelMult) / 160
+  r += getRune('thrift').bonus.costDelay
   r += (player.researches[56] + player.researches[57] + player.researches[58] + player.researches[59]
     + player.researches[60]) / 200
   r += CalcECC('transcend', player.challengecompletions[4]) / 200
@@ -702,7 +703,7 @@ export const buyCrystalUpgrades = (i: number, auto = false) => {
   const u = i - 1
 
   let c = 0
-  c += Math.floor(G.rune3level / 16 * G.effectiveLevelMult) * 100 / 100
+  c += getRune('prism').bonus.crystalLevels
   if (player.upgrades[73] > 0.5 && player.currentChallenge.reincarnation !== 0) {
     c += 10
   }

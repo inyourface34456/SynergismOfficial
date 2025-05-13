@@ -5,6 +5,7 @@ import { Globals as G } from './Variables'
 import Decimal from 'break_infinity.js'
 import { achievementaward } from './Achievements'
 import { CalcECC } from './Challenges'
+import { getRune } from './Runes'
 import { getTalisman } from './Talismans'
 
 export const calculatetax = () => {
@@ -84,8 +85,8 @@ export const calculatetax = () => {
     - 0.05 / 1800 * (player.achievements[45] + player.achievements[46] + 2 * player.achievements[47])
       * Math.min(player.prestigecounter, 1800)
   exponent *= Math.pow(0.965, CalcECC('reincarnation', player.challengecompletions[6]))
-  exponent *= 0.001 + .999 * (Math.pow(6, -(G.rune2level * G.effectiveLevelMult) / 1000))
-  exponent *= 0.01 + .99 * (Math.pow(4, Math.min(0, (400 - G.rune4level) / 1100)))
+  exponent *= getRune('duplication').bonus.taxReduction
+  exponent *= getRune('thrift').bonus.taxReduction
   exponent *= 1 - 0.04 * player.achievements[82] - 0.04 * player.achievements[89] - 0.04 * player.achievements[96]
     - 0.04 * player.achievements[103] - 0.04 * player.achievements[110] - 0.0566 * player.achievements[117]
     - 0.0566 * player.achievements[124] - 0.0566 * player.achievements[131]
