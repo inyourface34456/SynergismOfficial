@@ -3584,7 +3584,7 @@
       "name": "Prism Rune",
       "description": "You're in the high-fidelity first class traveling set.",
       "values": "~(1 + (Level/2)^2 * 2^(Level/2) / 256)x Crystal Production. +1 free level for each Crystal upgrade per 16 levels!",
-      "effect": "Prism Rune Bonus: All Crystal Producer production multiplied by {{val}}x, gain +{{val2}}' free crystal levels."
+      "effect": "Prism Rune Bonus: All Crystal Producer production multiplied by {{val}}x, gain +{{val2}} free crystal levels."
     },
     "thrift": {
       "name": "Thrift Rune",
@@ -3602,7 +3602,7 @@
       "name": "Infinite Ascent",
       "description": "A staircase you can only climb facing backwards, how weird is that?",
       "values": "+0.2% Quarks, +1% all Cube types per level! Start with +10% Quarks.",
-      "effect": "IA Rune Bonus: Quark Gain +{{val}}%, Ascensions give +{{val2}}% more of all cube types."
+      "effect": "IA Rune Bonus: Quark Gain +{{val}}, Ascensions give +{{val2}} more of all cube types."
     },
     "antiquities": {
       "name": "Antiquities of Ant God",

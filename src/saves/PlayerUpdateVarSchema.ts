@@ -63,6 +63,8 @@ export const playerUpdateVarSchema = playerSchema.transform((player) => {
     player.runes.antiquities = new Decimal(player.runeexp[6] ?? 0)
   }
 
+  Reflect.deleteProperty(player, 'runeexp')
+  Reflect.deleteProperty(player, 'runelevels')
   Reflect.deleteProperty(player, 'usedCorruptions')
   Reflect.deleteProperty(player, 'prototypeCorruptions')
   Reflect.deleteProperty(player, 'corruptionShowStats')

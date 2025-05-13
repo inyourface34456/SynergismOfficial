@@ -10,6 +10,7 @@ import { Globals as G } from './Variables'
 import Decimal from 'break_infinity.js'
 import i18next from 'i18next'
 import { DOMCacheGetOrSet } from './Cache/DOM'
+import { formatAsPercentIncrease } from './Campaign'
 import { CalcECC } from './Challenges'
 import { PCoinUpgradeEffects } from './PseudoCoinUpgrades'
 import { getTalismanBonus } from './Talismans'
@@ -128,7 +129,7 @@ export class Rune<K extends RuneKeys> {
     this._runeEXPPerOffering = data.runeEXPPerOffering
     this._isUnlocked = data.isUnlocked
 
-    this.runeEXP = new Decimal(data.runeEXP) ?? new Decimal('0')
+    this.runeEXP = new Decimal().fromDecimal(data.runeEXP ?? new Decimal('0'))
 
     this.#key = key
   }
@@ -151,7 +152,7 @@ export class Rune<K extends RuneKeys> {
 
   get TNL (): Decimal {
     const lvl = this.level
-    const expReq = this.computeEXPToLevel(lvl + 1)
+    const expReq = this.computeEXPToLevel(lvl + 2)
     return expReq.sub(this.runeEXP)
   }
 
@@ -168,7 +169,11 @@ export class Rune<K extends RuneKeys> {
   }
 
   get bonus () {
-    return this.rewards(this.effectiveRuneLevel)
+    if (!this.isUnlocked) {
+      return this.rewards(0)
+    } else {
+      return this.rewards(this.effectiveRuneLevel)
+    }
   }
 
   get rewardDesc () {
@@ -193,14 +198,14 @@ export class Rune<K extends RuneKeys> {
 
   updatePlayerEXP () {
     if (player.runes && this.#key in player.runes) {
-      player.runes[this.#key] = new Decimal(this.runeEXP)
+      player.runes[this.#key] = new Decimal().fromDecimal(this.runeEXP)
     } else {
       console.error(`Player object does not have a property for ${this.#key}.`)
     }
   }
 
   updateRuneEXP (exp: Decimal) {
-    this.runeEXP = new Decimal(exp)
+    this.runeEXP = new Decimal().fromDecimal(exp)
     console.log(this.#key, this.runeEXP)
     this.updatePlayerEXP()
 
@@ -222,6 +227,16 @@ export class Rune<K extends RuneKeys> {
   }
 
   levelRune (timesLeveled: number, budget: number, auto = false) {
+    if (!auto) {
+      console.log(`Leveling ${this.#key} rune with ${timesLeveled} levels to add`)
+      console.log(`Current EXP: ${this.runeEXP}`)
+      console.log(`Current level: ${this.level}`)
+      console.log(`EXP to level n+1: ${this.computeEXPToLevel(this.level + 2)}`)
+      console.log(`Current TNL: ${this.TNL}`)
+      console.log(`Current EXP per offering: ${this.perOfferingEXP}`)
+      console.log(`Current offerings to next level: ${this.offeringsToNextLevel}`)
+    }
+
     let budgetUsed = 0
     for (let i = 0; i < timesLeveled; i++) {
       const offeringsRequired = this.offeringsToNextLevel
@@ -232,10 +247,15 @@ export class Rune<K extends RuneKeys> {
 
       if (offeringsRequired.gt(budget - budgetUsed)) {
         this.addRuneEXP(new Decimal(budget - budgetUsed))
+        budgetUsed = budget
       } else {
         budgetUsed += offeringsRequired.toNumber()
         this.runeEXP = this.runeEXP.plus(offeringsRequired.times(this.perOfferingEXP))
       }
+    }
+
+    if (!auto) {
+      console.log(`Budget used: ${budgetUsed}`)
     }
 
     player.runeshards -= budgetUsed
@@ -370,7 +390,7 @@ export const universalRuneEXPMult = (purchasedLevels: number): Decimal => {
   ])
 
   // Rune multiplier that gets applied to all runes
-  const allRuneExpMultiplier = productContents([
+  const allRuneExpMultiplier = [
     // Research 4x16
     1 + player.researches[91] / 20,
     // Research 4x17
@@ -388,15 +408,9 @@ export const universalRuneEXPMult = (purchasedLevels: number): Decimal => {
     1 + (1 / 10) * player.constantUpgrades[8],
     // Challenge 15 reward multiplier
     G.challenge15Rewards.runeExp.value
-  ])
+  ].reduce((x, y) => x.times(y), new Decimal('1'))
 
-  const fact = [
-    allRuneExpAdditiveMultiplier,
-    allRuneExpMultiplier,
-    recycleMultiplier
-  ]
-
-  return fact.reduce((x, y) => x.times(y), new Decimal('1'))
+  return allRuneExpMultiplier.times(allRuneExpAdditiveMultiplier).times(recycleMultiplier)
 }
 
 export const speedEXPMult = () => {
@@ -489,7 +503,7 @@ export const runeData: { [K in RuneKeys]: RuneData<K> } = {
         desc: i18next.t('runes.duplication.effect', {
           val: format(additiveMultipliers, 0, true),
           val2: format(multiplicativeMultipliers, 3, true),
-          val3: format(taxReduction, 3, true)
+          val3: format(100 * (1 - taxReduction), 3, true)
         }),
         additiveMultipliers: additiveMultipliers,
         multiplicativeMultipliers: multiplicativeMultipliers,
@@ -533,8 +547,8 @@ export const runeData: { [K in RuneKeys]: RuneData<K> } = {
       return {
         desc: i18next.t('runes.thrift.effect', {
           val: format(costDelay, 2, true),
-          val2: format(recycleChance, 3, true),
-          val3: format(taxReduction, 2, true)
+          val2: format(100 * recycleChance, 3, true),
+          val3: format(100 * (1 - taxReduction), 2, true)
         }),
         costDelay: costDelay,
         recycleChance: recycleChance,
@@ -579,8 +593,8 @@ export const runeData: { [K in RuneKeys]: RuneData<K> } = {
       const cubeMult = 1 + level / 100
       return {
         desc: i18next.t('runes.infiniteAscent.effect', {
-          val: format(quarkMult, 3, true),
-          val2: format(cubeMult, 2, true)
+          val: formatAsPercentIncrease(quarkMult, 2),
+          val2: formatAsPercentIncrease(cubeMult, 2)
         }),
         quarkMult: quarkMult,
         cubeMult: cubeMult
@@ -596,9 +610,9 @@ export const runeData: { [K in RuneKeys]: RuneData<K> } = {
     levelsPerOOM: 1 / 50,
     levelsPerOOMIncrease: () => 0,
     rewards: (level) => {
-      const addCodeCooldownReduction = level > 0 ? 0.8 : 1
+      const addCodeCooldownReduction = level > 0 ? 0.8 - 0.3 * (level - 1) / (level + 10) : 1
       return {
-        desc: i18next.t('runes.antiquities.effect', { val: addCodeCooldownReduction }),
+        desc: i18next.t('runes.antiquities.effect', { val: format(100 * addCodeCooldownReduction, 2, true) }),
         addCodeCooldownReduction: addCodeCooldownReduction
       }
     },
@@ -728,6 +742,9 @@ export const resetOfferings = () => {
 export const sacrificeOfferings = (rune: RuneKeys, budget: number, auto = false) => {
   // if automated && 2x10 cube upgrade bought, this will be >0.
 
+  if (!auto) {
+    console.log(`Sacrificing ${rune} rune with ${budget} budget`)
+  }
   if (!getRune(rune).isUnlocked) {
     return
   }
@@ -738,6 +755,10 @@ export const sacrificeOfferings = (rune: RuneKeys, budget: number, auto = false)
   }
   if (auto && player.cubeUpgrades[20] > 0) {
     levelsToAdd = 1e2 // limit to max 10k levels per call so the execution doesn't take too long if things get stuck
+  }
+
+  if (!auto) {
+    console.log(`Sacrificing ${rune} rune with ${levelsToAdd} levels to add`)
   }
 
   getRune(rune).levelRune(levelsToAdd, budget, auto)

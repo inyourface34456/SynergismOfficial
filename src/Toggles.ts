@@ -297,7 +297,8 @@ export const toggleAutoResearchMode = () => {
 
 export const toggleAutoSacrifice = (index: number) => {
   const el = DOMCacheGetOrSet('toggleautosacrifice')
-  if (index === 0) {
+  const numIndex = Number(index)
+  if (numIndex === 0) {
     if (player.autoSacrificeToggle) {
       player.autoSacrificeToggle = false
       el.textContent = i18next.t('runes.blessings.autoRuneOff')
@@ -312,10 +313,10 @@ export const toggleAutoSacrifice = (index: number) => {
       DOMCacheGetOrSet('saveOffToggle').style.color = 'white'
     }
   } else if (player.autoSacrificeToggle && player.shopUpgrades.offeringAuto > 0.5) {
-    if (player.autoSacrifice === index) {
+    if (player.autoSacrifice === numIndex) {
       player.autoSacrifice = 0
     } else {
-      player.autoSacrifice = index
+      player.autoSacrifice = numIndex
     }
   }
   for (let i = 1; i <= 5; i++) {

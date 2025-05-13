@@ -498,13 +498,13 @@ export const player: Player = {
   crystalUpgradesCost: [7, 15, 20, 40, 100, 200, 500, 1000],
 
   runes: {
-    speed: new Decimal('1e12'),
-    duplication: new Decimal('1e23'),
-    prism: new Decimal('1e32'),
-    thrift: new Decimal('1e41'),
-    superiorIntellect: new Decimal('1e59'),
-    infiniteAscent: new Decimal('1e70'),
-    antiquities: new Decimal('1e200')
+    speed: new Decimal(0),
+    duplication: new Decimal(0),
+    prism: new Decimal(0),
+    thrift: new Decimal(0),
+    superiorIntellect: new Decimal(0),
+    infiniteAscent: new Decimal(0),
+    antiquities: new Decimal(0)
   },
 
   runeshards: 0,
