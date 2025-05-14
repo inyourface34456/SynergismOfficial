@@ -3478,7 +3478,7 @@ export const updateAllTick = (): void => {
     / 100
   for (let i = 1; i <= 5; i++) {
     if (player.achievements[7 * i - 4] > 0) {
-      G.acceleratorPower += 0.0005 * i
+      G.acceleratorPower += 0.0005 * (i + 1)
     }
   }
 

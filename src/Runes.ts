@@ -466,7 +466,7 @@ export const runeData: { [K in RuneKeys]: RuneData<K> } = {
     levelsPerOOM: 150,
     levelsPerOOMIncrease: () => 0,
     rewards: (level) => {
-      const acceleratorPower = 0.0001 * level
+      const acceleratorPower = 0.0002 * level
       const multiplicativeAccelerators = 1 + level / 400
       const globalSpeed = 2 - Math.exp(-Math.cbrt(level) / 100)
       return {

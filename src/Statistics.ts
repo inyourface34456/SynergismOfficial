@@ -835,7 +835,7 @@ export const allOcteractCubeStats: StatLine[] = [
 export const allBaseOfferingStats: StatLine[] = [
   {
     i18n: 'Base',
-    stat: () => 6 // Absolute Base
+    stat: () => 10 // Absolute Base
   },
   {
     i18n: 'PseudoCoins',
