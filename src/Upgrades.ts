@@ -58,14 +58,19 @@ const upgradetexts = [
     format(
       Decimal.min(
         1e50,
-        Decimal.pow(player.firstGeneratedMythos.add(player.firstOwnedMythos).add(1), 4 / 3).times(1e10)
+        Decimal.pow(player.firstGeneratedMythos.add(player.firstOwnedMythos).add(1), 4 / 3).times(1e22)
       ),
       2
     ),
-  () => format(Decimal.pow(1.15, G.freeAccelerator), 2),
-  () => format(Decimal.pow(1.15, G.freeAccelerator), 2),
+  () => format(Decimal.pow(1.15, G.freeAccelerator).times(1e5), 2),
+  () => format(Decimal.pow(1.15, G.freeAccelerator).times(1e5), 2),
   () => format(Decimal.pow(G.acceleratorEffect, 1 / 3), 2),
-  () => null,
+  () =>
+    format(
+      Decimal.min(1e125, player.transcendShards.add(1)),
+      0,
+      true
+    ),
   () => format(Decimal.min(1e125, player.transcendShards.add(1))),
   () => format(Decimal.min(1e200, player.transcendPoints.times(1e30).add(1))),
   () => format(Decimal.pow((G.totalCoinOwned + 1) * Math.min(1e30, Math.pow(1.008, G.totalCoinOwned)), 10), 2),
@@ -130,7 +135,7 @@ const upgradetexts = [
   () => null,
   () => null,
   () => null,
-  () => format(Decimal.min(1e30, Decimal.pow(player.transcendPoints.add(1), 1 / 2))),
+  () => format(Decimal.min(1e30, Decimal.pow(player.transcendPoints.add(1), 3 / 2))),
   () => format(Decimal.min(1e50, Decimal.pow(player.prestigePoints.add(1), 1 / 50).dividedBy(2.5).add(1)), 2),
   () => format(Decimal.min(1e30, Decimal.pow(1.01, player.transcendCount)), 2),
   () => format(Decimal.min(1e6, Decimal.pow(1.01, player.transcendCount)), 2),

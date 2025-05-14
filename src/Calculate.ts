@@ -492,7 +492,6 @@ export const calculateTotalAcceleratorBoost = () => {
       (1 / 20)
         * sumOfRuneLevels()
     )
-  b += getRune('speed').bonus.accelBoosts
   b *= 1
     + (1 / 5)
       * player.researches[3]
@@ -1020,8 +1019,8 @@ export const calculateOffline = (forceTime = 0, fromTips = false) => {
   const resetAdd = {
     prestige: timeAdd / Math.max(0.01, player.fastestprestige),
     offering: Math.floor(timeAdd),
-    transcension: timeAdd / Math.max(0.01, player.fastesttranscend),
-    reincarnation: timeAdd / Math.max(0.01, player.fastestreincarnate),
+    transcension: (player.transcendCount > 0) ? timeAdd / Math.max(0.01, player.fastesttranscend) : 0,
+    reincarnation: (player.reincarnationCount > 0) ? timeAdd / Math.max(0.01, player.fastestreincarnate) : 0,
     obtainium: timeAdd * obtainiumGain * G.timeMultiplier
   }
 

@@ -2669,7 +2669,7 @@
       "15": "Effect: Mint Generation x{{x}}",
       "16": "Effect: Gain {{x}}x more Diamonds on Prestige",
       "17": "Effect: Mint Production x1e100 (Duh)",
-      "18": "Effect: Printer Production x",
+      "18": "Effect: Printer Production x{{x}}",
       "19": "Effect: Investment Production x{{x}}",
       "20": "Effect: All coin production is further multiplied by {{x}} [Stacks with upgrade 1]!",
       "21": "Effect: {{x}} Multipliers, +{{y}} Accelerators.",
@@ -3309,7 +3309,7 @@
       "currentEffect": "Current Effect: <<lightblue|{{effect}}>>"
     },
     "mythosYouHave": "You have {{shards}} Mythos Shards, providing {{mult}} Multiplier Power boosts.",
-    "eachMultiplierBoost": "Each Multiplier Boost increases the base effect of Multipliers by 0.005!",
+    "eachMultiplierBoost": "Each Multiplier Boost increases the base effect of Multipliers by 0.02.",
     "costMythos": "Cost: {{mythos}} Mythos",
     "atomsYouHave": "You have {{atoms}} Atoms, providing {{power}} Building Power. Multiplier to Coin Production: {{mult}}",
     "costParticles": "Cost: {{particles}} Particles",
@@ -3571,14 +3571,14 @@
     "speed": {
       "name": "Speed Rune",
       "description": "An energy eminates from this stone. You feel compelled to inscribe power into it with your Offerings.",
-      "values": "+(Level/4)^1.25 Accelerator, +0.25% Accelerators per level. +1 Accelerator Boost every 20 levels!",
-      "effect": "Speed Rune Bonus: +{{val}} Accelerators, +{{val2}}% Accelerators, +{{val3}} Accelerator Boosts."
+      "values": "+0.01% Accelerator Power, +0.25% Accelerators per level. Global Speed (affecting resource production, and most reset timers) is multiplied by up to 2!",
+      "effect": "Speed Rune Bonus: +{{val}}% Accelerator Power, +{{val2}}% Accelerators, +{{val3}} Global Speed."
     },
     "duplication": {
       "name": "Duplication Rune",
       "description": "With this many diamonds, surely you live in a post-scarcity world. Let's counterfeit anyway!",
-      "values": "+(Level/10) Multipliers every 10th level, +0.25% Multipliers per level. Tax growth is delayed more for each level!",
-      "effect": "Duplication Rune Bonus: +{{val}} Multipliers, +{{val2}}% Multipliers, -{{val3}}% Tax Growth."
+      "values": "+1 Multiplier Power Boost (+0.02 to Multiplier Power), +0.25% Multipliers per level. Tax growth is delayed more for each level!",
+      "effect": "Duplication Rune Bonus: +{{val}} Multiplier Power Boosts, +{{val2}}% Multipliers, -{{val3}}% Tax Growth."
     },
     "prism": {
       "name": "Prism Rune",
@@ -4405,6 +4405,7 @@
     },
     "globalSpeedMultiplierStats": {
       "title": "Global Speed Multiplier",
+      "SpeedRune": "Speed Rune Bonus:",
       "ObtainiumLog": "Obtainium Log Bonus:",
       "Research5x21": "Research 5x21:",
       "Research6x11": "Research 6x11:",

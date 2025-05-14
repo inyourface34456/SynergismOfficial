@@ -35,13 +35,13 @@ interface BaseReward {
 }
 
 interface SpeedReward extends BaseReward {
-  additiveAccelerators: number
+  acceleratorPower: number
   multiplicativeAccelerators: number
-  accelBoosts: number
+  globalSpeed: number
 }
 
 interface DuplicationReward extends BaseReward {
-  additiveMultipliers: number
+  multiplierBoosts: number
   multiplicativeMultipliers: number
   taxReduction: number
 }
@@ -152,7 +152,7 @@ export class Rune<K extends RuneKeys> {
 
   get TNL (): Decimal {
     const lvl = this.level
-    const expReq = this.computeEXPToLevel(lvl + 2)
+    const expReq = this.computeEXPToLevel(lvl + 1)
     return expReq.sub(this.runeEXP)
   }
 
@@ -196,6 +196,10 @@ export class Rune<K extends RuneKeys> {
     return new Decimal(this.costCoefficient).times(Decimal.pow(10, level / this.effectiveLevelsPerOOM).minus(1))
   }
 
+  computeEXPLeftToLevel (level: number) {
+    return this.computeEXPToLevel(level).minus(this.runeEXP)
+  }
+
   updatePlayerEXP () {
     if (player.runes && this.#key in player.runes) {
       player.runes[this.#key] = new Decimal().fromDecimal(this.runeEXP)
@@ -227,37 +231,27 @@ export class Rune<K extends RuneKeys> {
   }
 
   levelRune (timesLeveled: number, budget: number, auto = false) {
-    if (!auto) {
-      console.log(`Leveling ${this.#key} rune with ${timesLeveled} levels to add`)
-      console.log(`Current EXP: ${this.runeEXP}`)
-      console.log(`Current level: ${this.level}`)
-      console.log(`EXP to level n+1: ${this.computeEXPToLevel(this.level + 2)}`)
-      console.log(`Current TNL: ${this.TNL}`)
-      console.log(`Current EXP per offering: ${this.perOfferingEXP}`)
-      console.log(`Current offerings to next level: ${this.offeringsToNextLevel}`)
-    }
-
     let budgetUsed = 0
-    for (let i = 0; i < timesLeveled; i++) {
-      const offeringsRequired = this.offeringsToNextLevel
 
-      if (offeringsRequired.gt(1e300)) {
-        break
-      }
+    const expRequired = this.computeEXPLeftToLevel(this.level + timesLeveled)
+    const offeringsRequired = Decimal.max(1, expRequired.div(this.perOfferingEXP).ceil())
 
-      if (offeringsRequired.gt(budget - budgetUsed)) {
-        this.addRuneEXP(new Decimal(budget - budgetUsed))
-        budgetUsed = budget
-      } else {
-        budgetUsed += offeringsRequired.toNumber()
-        this.runeEXP = this.runeEXP.plus(offeringsRequired.times(this.perOfferingEXP))
-      }
+    if (!auto) {
+      console.log('offerings required', offeringsRequired.toNumber())
+      console.log('EXP required', expRequired.toNumber())
+    }
+
+    if (offeringsRequired.gt(budget) || offeringsRequired.gt(1e300)) {
+      this.addRuneEXP(new Decimal(budget))
+      budgetUsed = budget
+    } else {
+      this.addRuneEXP(offeringsRequired)
+      budgetUsed = offeringsRequired.toNumber()
     }
 
     if (!auto) {
-      console.log(`Budget used: ${budgetUsed}`)
+      console.log('used budget', budgetUsed)
     }
-
     player.runeshards -= budgetUsed
 
     this.updatePlayerEXP()
@@ -468,22 +462,22 @@ export const antiquitiesEXPMult = () => {
 
 export const runeData: { [K in RuneKeys]: RuneData<K> } = {
   speed: {
-    costCoefficient: 1e3,
+    costCoefficient: 500,
     levelsPerOOM: 150,
     levelsPerOOMIncrease: () => 0,
     rewards: (level) => {
-      const additiveAccelerators = Math.floor(Math.pow(level / 4, 1.25))
+      const acceleratorPower = 0.0001 * level
       const multiplicativeAccelerators = 1 + level / 400
-      const accelBoosts = Math.floor(level / 20)
+      const globalSpeed = 2 - Math.exp(-Math.cbrt(level) / 100)
       return {
         desc: i18next.t('runes.speed.effect', {
-          val: format(additiveAccelerators, 0, true),
-          val2: format(multiplicativeAccelerators, 3, true),
-          val3: format(accelBoosts, 0, true)
+          val: format(100 * acceleratorPower, 2, true),
+          val2: format(multiplicativeAccelerators, 2, true),
+          val3: formatAsPercentIncrease(globalSpeed, 2)
         }),
-        additiveAccelerators: additiveAccelerators,
+        acceleratorPower: acceleratorPower,
         multiplicativeAccelerators: multiplicativeAccelerators,
-        accelBoosts: accelBoosts
+        globalSpeed: globalSpeed
       }
     },
     effectiveLevelMult: () => firstFiveEffectiveRuneLevelMult(),
@@ -496,16 +490,16 @@ export const runeData: { [K in RuneKeys]: RuneData<K> } = {
     levelsPerOOM: 150,
     levelsPerOOMIncrease: () => 0,
     rewards: (level) => {
-      const additiveMultipliers = Math.floor(level / 10) * Math.floor(1 + level / 10) / 2
+      const multiplierBoosts = level
       const multiplicativeMultipliers = 1 + level / 400
-      const taxReduction = 0.001 + .999 * Math.exp(-Math.sqrt(level) / 1000)
+      const taxReduction = 0.001 + .999 * Math.exp(-Math.cbrt(level) / 10)
       return {
         desc: i18next.t('runes.duplication.effect', {
-          val: format(additiveMultipliers, 0, true),
+          val: format(multiplierBoosts, 0, true),
           val2: format(multiplicativeMultipliers, 3, true),
           val3: format(100 * (1 - taxReduction), 3, true)
         }),
-        additiveMultipliers: additiveMultipliers,
+        multiplierBoosts: multiplierBoosts,
         multiplicativeMultipliers: multiplicativeMultipliers,
         taxReduction: taxReduction
       }
@@ -751,10 +745,10 @@ export const sacrificeOfferings = (rune: RuneKeys, budget: number, auto = false)
 
   let levelsToAdd = player.offeringbuyamount
   if (auto) {
-    levelsToAdd = Math.min(1e2, Math.pow(2, player.shopUpgrades.offeringAuto))
+    levelsToAdd = player.shopUpgrades.offeringAuto
   }
   if (auto && player.cubeUpgrades[20] > 0) {
-    levelsToAdd = 1e2 // limit to max 10k levels per call so the execution doesn't take too long if things get stuck
+    levelsToAdd *= 2 // limit to max 10k levels per call so the execution doesn't take too long if things get stuck
   }
 
   if (!auto) {

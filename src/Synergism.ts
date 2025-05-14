@@ -3430,7 +3430,6 @@ export const updateAllTick = (): void => {
       + 3 * player.researches[20]
       + G.cubeBonusMultiplier[1])
   if (player.unlocks.prestige) {
-    a += getRune('speed').bonus.additiveAccelerators
     a *= getRune('speed').bonus.multiplicativeAccelerators
   }
 
@@ -3467,6 +3466,7 @@ export const updateAllTick = (): void => {
 
   G.acceleratorPower = Math.pow(
     1.1
+      + getRune('speed').bonus.acceleratorPower
       + G.tuSevenMulti
         * (G.totalAcceleratorBoost / 100)
         * (1 + CalcECC('transcend', player.challengecompletions[2]) / 20),
@@ -3623,8 +3623,6 @@ export const updateAllMultiplier = (): void => {
 
   G.freeUpgradeMultiplier = Math.min(1e100, a)
 
-  a += getRune('duplication').bonus.additiveMultipliers
-
   a *= 1 + player.achievements[57] / 100
   a *= 1 + player.achievements[58] / 100
   a *= 1 + player.achievements[59] / 100
@@ -3696,6 +3694,7 @@ export const updateAllMultiplier = (): void => {
   let b = 0
   let c = 0
   b += Decimal.log(player.transcendShards.add(1), 3)
+  b += getRune('duplication').bonus.multiplierBoosts
   b *= 1 + (11 * player.researches[33]) / 100
   b *= 1 + (11 * player.researches[34]) / 100
   b *= 1 + (11 * player.researches[35]) / 100
@@ -3717,7 +3716,7 @@ export const updateAllMultiplier = (): void => {
     c7 = 1.25
   }
 
-  G.multiplierPower = 2 + 0.005 * G.totalMultiplierBoost * c7
+  G.multiplierPower = 2 + 0.02 * G.totalMultiplierBoost * c7
 
   // No MA and Sadistic will always override Transcend Challenges starting in v2.0.0
   if (
@@ -3827,7 +3826,7 @@ export const multipliers = (): void => {
   }
   if (player.upgrades[41] > 0.5) {
     s = s.times(
-      Decimal.min(1e30, Decimal.pow(player.transcendPoints.add(1), 1 / 2))
+      Decimal.min(1e100, Decimal.pow(player.transcendPoints.add(1), 3 / 2))
     )
   }
   if (player.upgrades[43] > 0.5) {
@@ -3908,7 +3907,7 @@ export const multipliers = (): void => {
         Decimal.pow(
           player.firstGeneratedMythos.add(player.firstOwnedMythos).add(1),
           4 / 3
-        ).times(1e10)
+        ).times(1e22)
       )
     )
   }
@@ -5273,10 +5272,10 @@ export const updateAll = (): void => {
   G.uFifteenMulti = new Decimal(1)
 
   if (player.upgrades[14] > 0.5) {
-    G.uFourteenMulti = Decimal.pow(1.15, G.freeAccelerator)
+    G.uFourteenMulti = Decimal.pow(1.15, G.freeAccelerator).times(1e5)
   }
   if (player.upgrades[15] > 0.5) {
-    G.uFifteenMulti = Decimal.pow(1.15, G.freeAccelerator)
+    G.uFifteenMulti = Decimal.pow(1.15, G.freeAccelerator).times(1e5)
   }
 
   if (!player.unlocks.coinone && player.coins.gte(500)) {

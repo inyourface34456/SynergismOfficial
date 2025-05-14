@@ -1740,6 +1740,10 @@ export const allGlobalSpeedIgnoreDRStats: StatLine[] = [
 
 export const allGlobalSpeedStats: StatLine[] = [
   {
+    i18n: 'SpeedRune',
+    stat: () => getRune('speed').bonus.globalSpeed // Speed Rune
+  },
+  {
     i18n: 'ObtainiumLog',
     stat: () => 1 + (1 / 300) * Math.log10(player.maxobtainium + 1) * player.upgrades[70] // Particle upgrade 2x5
   },
