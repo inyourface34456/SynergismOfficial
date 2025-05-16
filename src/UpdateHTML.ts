@@ -2,12 +2,7 @@ import Decimal from 'break_infinity.js'
 import i18next from 'i18next'
 import { achievementaward, totalachievementpoints } from './Achievements'
 import { DOMCacheGetOrSet } from './Cache/DOM'
-import {
-  CalcCorruptionStuff,
-  calculateAscensionSpeedMult,
-  calculateGlobalSpeedMult,
-  isShopTalismanUnlocked
-} from './Calculate'
+import { CalcCorruptionStuff, calculateAscensionSpeedMult, calculateGlobalSpeedMult } from './Calculate'
 import { getMaxChallenges } from './Challenges'
 import { revealCorruptions } from './Corruptions'
 import { initializeCart } from './purchases/CartTab'
@@ -16,6 +11,7 @@ import { getRune, type RuneKeys } from './Runes'
 import { updateSingularityPenalties, updateSingularityPerks } from './singularity'
 import { format, formatTimeShort, /*formatTimeShort*/ player } from './Synergism'
 import { getActiveSubTab, Tabs } from './Tabs'
+import { getTalisman, type TalismanKeys } from './Talismans'
 import type { OneToFive, ZeroToFour, ZeroToSeven } from './types/Synergism'
 import {
   visualUpdateAchievements,
@@ -179,6 +175,14 @@ export const revealStuff = () => {
     }
   }
 
+  for (const talisman of Object.keys(player.talismans) as TalismanKeys[]) {
+    if (getTalisman(talisman).isUnlocked) {
+      DOMCacheGetOrSet(`${talisman}TalismanContainer`).style.display = 'flex'
+    } else {
+      DOMCacheGetOrSet(`${talisman}TalismanContainer`).style.display = 'none'
+    }
+  }
+
   if (player.achievements[43] === 1) { // Transcend Mythos Achievement 1
     DOMCacheGetOrSet('prestigeautotoggle').style.display = 'block'
     DOMCacheGetOrSet('prestigeamount').style.display = 'block'
@@ -189,18 +193,6 @@ export const revealStuff = () => {
     DOMCacheGetOrSet('autoprestige').style.display = 'none'
   }
 
-  player.achievements[119] === 1 // Tax+ Challenge Achievement 7
-    ? DOMCacheGetOrSet('exemptionTalismanContainer').style.display = 'flex'
-    : DOMCacheGetOrSet('exemptionTalismanContainer').style.display = 'none'
-
-  player.achievements[126] === 1 // No MA Challenge Achievement 7
-    ? DOMCacheGetOrSet('chronosTalismanContainer').style.display = 'flex'
-    : DOMCacheGetOrSet('chronosTalismanContainer').style.display = 'none'
-
-  player.achievements[133] === 1 // Cost++ Challenge Achievement 7
-    ? DOMCacheGetOrSet('midasTalismanContainer').style.display = 'flex'
-    : DOMCacheGetOrSet('midasTalismanContainer').style.display = 'none'
-
   if (player.achievements[134] === 1) { // No Runes Challenge Achievement 1
     DOMCacheGetOrSet('toggleRuneSubTab2').style.display = 'block'
     DOMCacheGetOrSet('toggleRuneSubTab3').style.display = 'block'
@@ -208,14 +200,6 @@ export const revealStuff = () => {
     DOMCacheGetOrSet('toggleRuneSubTab2').style.display = 'none'
     DOMCacheGetOrSet('toggleRuneSubTab3').style.display = 'none'
   }
-
-  player.achievements[140] === 1 // No Runes Challenge Achievement 7
-    ? DOMCacheGetOrSet('metaphysicsTalismanContainer').style.display = 'flex'
-    : DOMCacheGetOrSet('metaphysicsTalismanContainer').style.display = 'none'
-
-  player.achievements[147] === 1 // Sadistic Challenge Achievement 7
-    ? DOMCacheGetOrSet('polymathTalismanContainer').style.display = 'flex'
-    : DOMCacheGetOrSet('polymathTalismanContainer').style.display = 'none'
 
   player.achievements[173] === 1 // Galactic Crumb Achievement 5
     ? DOMCacheGetOrSet('sacrificeAnts').style.display = 'block'
@@ -266,9 +250,6 @@ export const revealStuff = () => {
   player.researches[190] > 0 // 8x15 Research [Auto Tesseracts]
     ? DOMCacheGetOrSet('autotessbuyeramount').style.display = 'block'
     : DOMCacheGetOrSet('autotessbuyeramount').style.display = 'none'
-  ;(player.antUpgrades[11]! > 0 || player.ascensionCount > 0) // Ant Talisman Unlock, Mortuus
-    ? DOMCacheGetOrSet('mortuusTalismanContainer').style.display = 'flex'
-    : DOMCacheGetOrSet('mortuusTalismanContainer').style.display = 'none'
 
   player.shopUpgrades.offeringAuto > 0 // Auto Offering Shop Purchase
     ? DOMCacheGetOrSet('toggleautosacrifice').style.display = 'block'
@@ -286,14 +267,6 @@ export const revealStuff = () => {
     player.shopUpgrades.obtainiumAuto > 0 && autoResearchEnabled() // Auto Research Shop Purchase Mode
       ? 'block'
       : 'none'
-
-  isShopTalismanUnlocked() // Plastic Talisman Shop Purchase
-    ? DOMCacheGetOrSet('plasticTalismanContainer').style.display = 'flex'
-    : DOMCacheGetOrSet('plasticTalismanContainer').style.display = 'none'
-
-  player.ascensionCount > 100 // Wow Square
-    ? DOMCacheGetOrSet('wowSquareTalismanContainer').style.display = 'flex'
-    : DOMCacheGetOrSet('wowSquareTalismanContainer').style.display = 'none'
 
   player.cubeUpgrades[8] > 0
     ? DOMCacheGetOrSet('reincarnateAutoUpgrade').style.display = 'block'
@@ -776,7 +749,6 @@ export const buttoncolorchange = () => {
       ? e.classList.add('buildingPurchaseBtnAvailable')
       : e.classList.remove('buildingPurchaseBtnAvailable')
     let k = 0
-    k += getRune('prism').bonus.crystalLevels
     if (player.upgrades[73] === 1 && player.currentChallenge.reincarnation !== 0) {
       k += 10
     }

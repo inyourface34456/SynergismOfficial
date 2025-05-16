@@ -83,6 +83,31 @@ export const visualUpdateBuildings = () => {
       totalProductionDivisor = new Decimal(1)
     }
 
+    DOMCacheGetOrSet('coinInformation').innerHTML = i18next.t('buildings.coinInformation', {
+      coins: format(player.coins, 2, false),
+      coinsPerSecond: format(
+        Decimal.min(
+          G.producePerSecond.dividedBy(G.taxdivisor),
+          Decimal.pow(10, G.maxexponent - Decimal.log(G.taxdivisorcheck, 10))
+        ),
+        0,
+        false
+      ),
+      totalGenerated: format(player.coinsTotal, 0, true)
+    })
+
+    let vanityIndex = 0
+    const decimalCoin = Decimal.log10(player.coinsTotal)
+    for (let i = 0; i < G.coinVanityThresholds.length; i++) {
+      if (decimalCoin < G.coinVanityThresholds[i]) {
+        break
+      } else {
+        vanityIndex += 1
+      }
+    }
+
+    DOMCacheGetOrSet('coinVanity').innerHTML = `<i>${i18next.t(`buildings.coinFlavorTexts.${vanityIndex}`)}</i>`
+
     for (let i = 1; i <= 5; i++) {
       const place = G[upper[i - 1]]
       const ith = G.ordinals[(i - 1) as ZeroToFour]
@@ -110,8 +135,8 @@ export const visualUpdateBuildings = () => {
       DOMCacheGetOrSet(`buildtext${2 * i}`).textContent = i18next.t(
         'buildings.coinsPerSecond',
         {
-          coins: format(place.dividedBy(G.taxdivisor).times(40), 2),
-          percent: format(percentage, 3)
+          coins: format(place.dividedBy(G.taxdivisor).times(40), 0),
+          percent: format(percentage, 2)
         }
       )
     }
@@ -160,10 +185,17 @@ export const visualUpdateBuildings = () => {
       'buildings.acceleratorBoost',
       {
         amount: format(
-          G.tuSevenMulti
-            * (1 + player.researches[16] / 50)
-            * (1 + CalcECC('transcend', player.challengecompletions[2]) / 100),
+          100 * (0.01 * G.tuSevenMulti * (1 + CalcECC('transcend', player.challengecompletions[2]) / 20)),
           2
+        ),
+        accelsPerBoost: format(
+          5
+            + 2 * player.researches[18]
+            + 2 * player.researches[19]
+            + 3 * player.researches[20]
+            + (G.cubeBonusMultiplier[1] - 1),
+          0,
+          true
         )
       }
     )

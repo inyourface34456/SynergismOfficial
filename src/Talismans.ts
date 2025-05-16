@@ -1,10 +1,11 @@
 import i18next from 'i18next'
 import { achievementaward } from './Achievements'
 import { DOMCacheGetOrSet } from './Cache/DOM'
+import { isShopTalismanUnlocked } from './Calculate'
 import { formatAsPercentIncrease } from './Campaign'
 import { CalcECC } from './Challenges'
 import { PCoinUpgradeEffects } from './PseudoCoinUpgrades'
-import type { RuneKeys } from './Runes'
+import { getRune, resetTiers, type RuneKeys } from './Runes'
 import { format, player } from './Synergism'
 import { sumContents } from './Utility'
 
@@ -133,7 +134,8 @@ interface TalismanData<K extends TalismanKeys> {
   costs: (this: void, baseMult: number, level: number) => Record<TalismanCraftItems, number>
   levelCapIncrease: () => number
   rewards(this: void, n: number): TalismanTypeMap[K]
-
+  isUnlocked: () => boolean
+  minimalResetTier: keyof typeof resetTiers
   talismanBaseCoefficient: TalismanRuneBonus
 
   // Field that is stored in the player
@@ -149,8 +151,10 @@ export class Talisman<K extends TalismanKeys> {
   readonly baseMult: number
   readonly maxLevel: number
   readonly rewards: (n: number) => TalismanTypeMap[K]
-
+  readonly _isUnlocked: () => boolean
+  readonly minimalResetTier: keyof typeof resetTiers
   readonly talismanBaseCoefficient: TalismanRuneBonus
+
   public _level = 0
   #key: K
 
@@ -166,7 +170,9 @@ export class Talisman<K extends TalismanKeys> {
     this.baseMult = data.baseMult
     this.maxLevel = data.maxLevel
     this.rewards = data.rewards
+    this._isUnlocked = data.isUnlocked
     this.talismanBaseCoefficient = data.talismanBaseCoefficient
+    this.minimalResetTier = data.minimalResetTier
 
     this.fragmentsInvested = data.fragmentsInvested ?? noTalismanFragments
     this.updateLevelAndSpentFromInvested()
@@ -191,6 +197,10 @@ export class Talisman<K extends TalismanKeys> {
 
   // From 1 to 7 with linear scaling, unaffected by level cap increasers
   get rarity () {
+    if (!this.isUnlocked) {
+      return 0
+    }
+
     return 1 + Math.min(6, Math.floor(6 * this.level / this.maxLevel))
   }
 
@@ -202,6 +212,10 @@ export class Talisman<K extends TalismanKeys> {
       const levelReq = Math.ceil(this.maxLevel * currentRarity / 6)
       return levelReq - this.level
     }
+  }
+
+  get isUnlocked () {
+    return this._isUnlocked()
   }
 
   affordableNextLevel (budget: Record<TalismanCraftItems, number>): boolean {
@@ -290,6 +304,7 @@ export class Talisman<K extends TalismanKeys> {
       this.updateCostHTML()
       this.updateTalismanDisplay()
       this.updatePlayerData()
+      updateTalismanInventory()
     }
   }
 
@@ -310,6 +325,7 @@ export class Talisman<K extends TalismanKeys> {
     }
     this.updateTalismanDisplay()
     this.updatePlayerData()
+    updateTalismanInventory()
   }
 
   buyLevelToMax (): void {
@@ -327,6 +343,7 @@ export class Talisman<K extends TalismanKeys> {
     this.updateCostHTML()
     this.updateTalismanDisplay()
     this.updatePlayerData()
+    updateTalismanInventory()
   }
 
   public get bonus () {
@@ -404,7 +421,7 @@ export class Talisman<K extends TalismanKeys> {
         signatureHTML.style.display = 'none'
       })()
 
-    this.runeBonuses.speed > 0
+    this.runeBonuses.speed > 0 && getRune('speed').isUnlocked
       ? (() => {
         speedHTML.style.display = 'block'
         speedHTML.innerHTML = i18next.t('runes.talismans.bonusRuneLevels.speed', {
@@ -414,7 +431,7 @@ export class Talisman<K extends TalismanKeys> {
       : (() => {
         DOMCacheGetOrSet('talismanSpeedEffect').style.display = 'none'
       })()
-    this.runeBonuses.duplication > 0
+    this.runeBonuses.duplication > 0 && getRune('duplication').isUnlocked
       ? (() => {
         duplicationHTML.style.display = 'block'
         duplicationHTML.innerHTML = i18next.t('runes.talismans.bonusRuneLevels.duplication', {
@@ -424,7 +441,7 @@ export class Talisman<K extends TalismanKeys> {
       : (() => {
         DOMCacheGetOrSet('talismanDupeEffect').style.display = 'none'
       })()
-    this.runeBonuses.prism > 0
+    this.runeBonuses.prism > 0 && getRune('prism').isUnlocked
       ? (() => {
         prismHTML.style.display = 'block'
         prismHTML.innerHTML = i18next.t('runes.talismans.bonusRuneLevels.prism', {
@@ -434,7 +451,7 @@ export class Talisman<K extends TalismanKeys> {
       : (() => {
         DOMCacheGetOrSet('talismanPrismEffect').style.display = 'none'
       })()
-    this.runeBonuses.thrift > 0
+    this.runeBonuses.thrift > 0 && getRune('thrift').isUnlocked
       ? (() => {
         thriftHTML.style.display = 'block'
         thriftHTML.innerHTML = i18next.t('runes.talismans.bonusRuneLevels.thrift', {
@@ -444,7 +461,7 @@ export class Talisman<K extends TalismanKeys> {
       : (() => {
         DOMCacheGetOrSet('talismanThriftEffect').style.display = 'none'
       })()
-    this.runeBonuses.superiorIntellect > 0
+    this.runeBonuses.superiorIntellect > 0 && getRune('superiorIntellect').isUnlocked
       ? (() => {
         sIHTML.style.display = 'block'
         sIHTML.innerHTML = i18next.t('runes.talismans.bonusRuneLevels.SI', {
@@ -454,7 +471,7 @@ export class Talisman<K extends TalismanKeys> {
       : (() => {
         DOMCacheGetOrSet('talismanSIEffect').style.display = 'none'
       })()
-    this.runeBonuses.infiniteAscent > 0
+    this.runeBonuses.infiniteAscent > 0 && getRune('infiniteAscent').isUnlocked
       ? (() => {
         iAHTML.style.display = 'block'
         iAHTML.innerHTML = i18next.t('runes.talismans.bonusRuneLevels.IA', {
@@ -613,6 +630,10 @@ const talismanData: { [K in TalismanKeys]: TalismanData<K> } = {
       superiorIntellect: 0,
       infiniteAscent: 0,
       antiquities: 0
+    },
+    minimalResetTier: 'ascension',
+    isUnlocked: () => {
+      return player.achievements[119] === 1
     }
   },
   chronos: {
@@ -638,6 +659,10 @@ const talismanData: { [K in TalismanKeys]: TalismanData<K> } = {
       superiorIntellect: 0.75,
       infiniteAscent: 0,
       antiquities: 0
+    },
+    minimalResetTier: 'ascension',
+    isUnlocked: () => {
+      return player.achievements[126] === 1
     }
   },
   midas: {
@@ -663,6 +688,10 @@ const talismanData: { [K in TalismanKeys]: TalismanData<K> } = {
       superiorIntellect: 0,
       infiniteAscent: 0,
       antiquities: 0
+    },
+    minimalResetTier: 'ascension',
+    isUnlocked: () => {
+      return player.achievements[133] === 1
     }
   },
   metaphysics: {
@@ -690,6 +719,10 @@ const talismanData: { [K in TalismanKeys]: TalismanData<K> } = {
       superiorIntellect: 0.6,
       infiniteAscent: 0,
       antiquities: 0
+    },
+    minimalResetTier: 'ascension',
+    isUnlocked: () => {
+      return player.achievements[140] === 1
     }
   },
   polymath: {
@@ -715,6 +748,10 @@ const talismanData: { [K in TalismanKeys]: TalismanData<K> } = {
       superiorIntellect: 1.5,
       infiniteAscent: 0,
       antiquities: 0
+    },
+    minimalResetTier: 'ascension',
+    isUnlocked: () => {
+      return player.achievements[147] === 1
     }
   },
   mortuus: {
@@ -740,6 +777,10 @@ const talismanData: { [K in TalismanKeys]: TalismanData<K> } = {
       superiorIntellect: 0.6,
       infiniteAscent: 0,
       antiquities: 0
+    },
+    minimalResetTier: 'ascension',
+    isUnlocked: () => {
+      return player.antUpgrades[11]! > 0 || player.ascensionCount > 0
     }
   },
   plastic: {
@@ -767,6 +808,10 @@ const talismanData: { [K in TalismanKeys]: TalismanData<K> } = {
       superiorIntellect: 0.75,
       infiniteAscent: 0.005,
       antiquities: 0
+    },
+    minimalResetTier: 'ascension',
+    isUnlocked: () => {
+      return isShopTalismanUnlocked()
     }
   },
   wowSquare: {
@@ -793,6 +838,10 @@ const talismanData: { [K in TalismanKeys]: TalismanData<K> } = {
       superiorIntellect: 1,
       infiniteAscent: 0,
       antiquities: 0
+    },
+    minimalResetTier: 'ascension',
+    isUnlocked: () => {
+      return player.ascensionCount >= 100
     }
   }
 }
@@ -843,14 +892,24 @@ export const getTalismanBonus = (rune: RuneKeys) => {
   return totalBonus
 }
 
-export const resetTalismans = () => {
+export const resetTalismans = (tier: keyof typeof resetTiers) => {
   if (talismans === null) {
     throw new Error('Talisman not initialized. Call initTalismans first.')
   } else {
     for (const talisman of Object.values(talismans)) {
-      talisman.resetTalisman()
+      if (resetTiers[tier] >= resetTiers[talisman.minimalResetTier]) {
+        talisman.resetTalisman()
+      }
     }
   }
+
+  player.talismanShards = 0
+  player.commonFragments = 0
+  player.uncommonFragments = 0
+  player.rareFragments = 0
+  player.epicFragments = 0
+  player.legendaryFragments = 0
+  player.mythicalFragments = 0
 }
 
 export const sumOfTalismanRarities = () => {

@@ -691,9 +691,15 @@ export const buyUpgrades = (type: Upgrade, pos: number, state?: boolean) => {
 export const calculateCrystalBuy = (i: number) => {
   const u = i - 1
   const exponent = Decimal.log(player.prestigeShards.add(1), 10)
-
+  const exponentCostReduction = getRune('prism').bonus.costDivisorLog10
   const toBuy = Math.floor(
-    Math.pow(Math.max(0, 2 * (exponent - G.crystalUpgradesCost[u]) / G.crystalUpgradeCostIncrement[u] + 1 / 4), 1 / 2)
+    Math.pow(
+      Math.max(
+        0,
+        2 * (exponent + exponentCostReduction - G.crystalUpgradesCost[u]) / G.crystalUpgradeCostIncrement[u] + 1 / 4
+      ),
+      1 / 2
+    )
       + 1 / 2
   )
   return toBuy
@@ -703,10 +709,11 @@ export const buyCrystalUpgrades = (i: number, auto = false) => {
   const u = i - 1
 
   let c = 0
-  c += getRune('prism').bonus.crystalLevels
   if (player.upgrades[73] > 0.5 && player.currentChallenge.reincarnation !== 0) {
     c += 10
   }
+
+  const costReduction = getRune('prism').bonus.costDivisorLog10
 
   const toBuy = calculateCrystalBuy(i)
 
@@ -716,7 +723,8 @@ export const buyCrystalUpgrades = (i: number, auto = false) => {
       player.prestigeShards = player.prestigeShards.sub(
         Decimal.pow(
           10,
-          G.crystalUpgradesCost[u] + G.crystalUpgradeCostIncrement[u] * (1 / 2 * Math.pow(toBuy - 1 / 2, 2) - 1 / 8)
+          G.crystalUpgradesCost[u] - costReduction
+            + G.crystalUpgradeCostIncrement[u] * (1 / 2 * Math.pow(toBuy - 1 / 2, 2) - 1 / 8)
         )
       )
       if (!auto) {

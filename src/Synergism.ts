@@ -509,7 +509,6 @@ export const player: Player = {
 
   runeshards: 0,
   maxofferings: 0,
-  offeringpersecond: 0,
 
   prestigecounter: 0,
   transcendcounter: 0,
@@ -3364,26 +3363,6 @@ export const updateAllTick = (): void => {
   if (player.upgrades[25] !== 0) {
     a += 1
   }
-  if (player.upgrades[27] !== 0) {
-    a += Math.min(250, Math.floor(Decimal.log(player.coins.add(1), 1e3)))
-      + Math.min(
-        1750,
-        Math.max(0, Math.floor(Decimal.log(player.coins.add(1), 1e15)) - 50)
-      )
-  }
-  if (player.upgrades[29] !== 0) {
-    a += Math.floor(
-      Math.min(
-        2000,
-        (player.firstOwnedCoin
-          + player.secondOwnedCoin
-          + player.thirdOwnedCoin
-          + player.fourthOwnedCoin
-          + player.fifthOwnedCoin)
-          / 80
-      )
-    )
-  }
   if (player.upgrades[32] !== 0) {
     a += Math.min(
       500,
@@ -3424,11 +3403,12 @@ export const updateAllTick = (): void => {
   a += 5 * CalcECC('transcend', player.challengecompletions[2])
   G.freeUpgradeAccelerator = a
   a += G.totalAcceleratorBoost
-    * (4
+    * (5
       + 2 * player.researches[18]
       + 2 * player.researches[19]
       + 3 * player.researches[20]
-      + G.cubeBonusMultiplier[1])
+      + (G.cubeBonusMultiplier[1] - 1))
+
   if (player.unlocks.prestige) {
     a *= getRune('speed').bonus.multiplicativeAccelerators
   }
@@ -3464,23 +3444,23 @@ export const updateAllTick = (): void => {
     G.tuSevenMulti = 1.05
   }
 
+  let achievementBonus = 0
+  for (let i = 1; i <= 5; i++) {
+    if (player.achievements[7 * i - 4] > 0) {
+      achievementBonus += 0.0005 * (i + 1)
+    }
+  }
+
   G.acceleratorPower = Math.pow(
     1.1
       + getRune('speed').bonus.acceleratorPower
+      + 1 / 400 * CalcECC('transcend', player.challengecompletions[2])
+      + achievementBonus
       + G.tuSevenMulti
         * (G.totalAcceleratorBoost / 100)
         * (1 + CalcECC('transcend', player.challengecompletions[2]) / 20),
     1 + 0.04 * CalcECC('reincarnation', player.challengecompletions[7])
   )
-  G.acceleratorPower += ((1 / 200)
-    * Math.floor(CalcECC('transcend', player.challengecompletions[2]) / 2)
-    * 100)
-    / 100
-  for (let i = 1; i <= 5; i++) {
-    if (player.achievements[7 * i - 4] > 0) {
-      G.acceleratorPower += 0.0005 * (i + 1)
-    }
-  }
 
   // No MA and Sadistic will always overwrite Transcend challenges starting in v2.0.0
   if (
@@ -3560,23 +3540,6 @@ export const updateAllMultiplier = (): void => {
   }
   if (player.upgrades[25] > 0) {
     a += 1
-  }
-  if (player.upgrades[28] > 0) {
-    a += Math.min(
-      1000,
-      Math.floor(
-        (player.firstOwnedCoin
-          + player.secondOwnedCoin
-          + player.thirdOwnedCoin
-          + player.fourthOwnedCoin
-          + player.fifthOwnedCoin)
-          / 160
-      )
-    )
-  }
-  if (player.upgrades[30] > 0) {
-    a += Math.min(75, Math.floor(Decimal.log(player.coins.add(1), 1e10)))
-      + Math.min(925, Math.floor(Decimal.log(player.coins.add(1), 1e30)))
   }
   if (player.upgrades[33] > 0) {
     a += G.totalAcceleratorBoost
@@ -3692,20 +3655,16 @@ export const updateAllMultiplier = (): void => {
   G.challengeOneLog = 3
 
   let b = 0
-  let c = 0
+  const c = 0
   b += Decimal.log(player.transcendShards.add(1), 3)
   b += getRune('duplication').bonus.multiplierBoosts
+  b += 2 * CalcECC('transcend', player.challengecompletions[1])
   b *= 1 + (11 * player.researches[33]) / 100
   b *= 1 + (11 * player.researches[34]) / 100
   b *= 1 + (11 * player.researches[35]) / 100
   b *= 1 + player.researches[89] / 5
   b *= 1 + 10 * G.effectiveRuneBlessingPower[2]
 
-  c += Math.floor(
-    0.1 * b * CalcECC('transcend', player.challengecompletions[1])
-  )
-  c += CalcECC('transcend', player.challengecompletions[1]) * 10
-  G.freeMultiplierBoost = c
   G.totalMultiplierBoost = Math.pow(
     Math.floor(b) + c,
     1 + CalcECC('reincarnation', player.challengecompletions[7]) * 0.04
@@ -3826,7 +3785,7 @@ export const multipliers = (): void => {
   }
   if (player.upgrades[41] > 0.5) {
     s = s.times(
-      Decimal.min(1e100, Decimal.pow(player.transcendPoints.add(1), 3 / 2))
+      Decimal.min(1e30, Decimal.pow(player.transcendPoints.add(4), 1 / 2))
     )
   }
   if (player.upgrades[43] > 0.5) {
@@ -4611,9 +4570,9 @@ export const updateAntMultipliers = (): void => {
   )
 
   // TODO: Replace with Talisman Bonus --Platonic
-  G.globalAntMult = G.globalAntMult.times(
+  /*G.globalAntMult = G.globalAntMult.times(
     Decimal.pow(1 + sumOfRuneLevels() / 100, 0.5)
-  )
+  )*/
 
   G.globalAntMult = G.globalAntMult.times(
     Decimal.pow(1.1, CalcECC('reincarnation', player.challengecompletions[9]))
@@ -5426,7 +5385,6 @@ export const updateAll = (): void => {
   updateEffectiveLevelMult() // update before prism rune, fixes c15 bug
 
   let c = 0
-  c += getRune('prism').bonus.crystalLevels
   if (
     player.upgrades[73] > 0.5
     && player.currentChallenge.reincarnation !== 0

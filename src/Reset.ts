@@ -41,7 +41,7 @@ import { calculateHypercubeBlessings } from './Hypercubes'
 import { importSynergism } from './ImportExport'
 import { autoBuyPlatonicUpgrades, updatePlatonicUpgradeBG } from './Platonic'
 import { buyResearch, updateResearchBG } from './Research'
-import { getRune, resetOfferings } from './Runes'
+import { getRune, resetOfferings, resetRunes } from './Runes'
 import { playerJsonSchema } from './saves/PlayerJsonSchema'
 import { forceResetShopUpgrades, shopData } from './Shop'
 import { calculateSingularityDebuff, getFastForwardTotalMultiplier } from './singularity'
@@ -61,6 +61,14 @@ import { sumContents } from './Utility'
 import { Globals as G } from './Variables'
 
 let repeatreset: number
+
+export enum resetTiers {
+  prestige = 1,
+  transcension = 2,
+  reincarnation = 3,
+  ascension = 4,
+  singularity = 5
+}
 
 export const resetrepeat = (input: resetNames) => {
   clearInterval(repeatreset)
@@ -593,12 +601,11 @@ export const reset = (input: resetNames, fast = false, from = 'unknown') => {
     // reset rest
     resetResearches()
     resetAnts()
-    resetTalismans()
+    resetTalismans('ascension')
     player.reincarnationPoints = new Decimal('0')
     player.reincarnationShards = new Decimal('0')
     player.obtainiumpersecond = 0
     player.maxobtainiumpersecond = 0
-    player.offeringpersecond = 0
     player.antSacrificePoints = 0
     player.antSacrificeTimer = 0
     player.antSacrificeTimerReal = 0
@@ -623,11 +630,7 @@ export const reset = (input: resetNames, fast = false, from = 'unknown') => {
     player.runeshards = 0
     player.crystalUpgrades = [0, 0, 0, 0, 0, 0, 0, 0]
 
-    getRune('speed').resetRuneEXP()
-    getRune('duplication').resetRuneEXP()
-    getRune('prism').resetRuneEXP()
-    getRune('thrift').resetRuneEXP()
-    getRune('superiorIntellect').resetRuneEXP()
+    resetRunes('ascension')
 
     if (player.cubeUpgrades[27] === 1) {
       player.firstOwnedParticles = 1
@@ -1165,9 +1168,8 @@ export const singularity = (setSingNumber = -1) => {
     resetHistoryAdd('singularity', historyEntry)
   }
 
-  // Reset IA and Antiquity runes.
-  getRune('infiniteAscent').resetRuneEXP()
-  getRune('antiquities').resetRuneEXP()
+  resetRunes('singularity')
+  resetTalismans('singularity')
 
   player.goldenQuarks += calculateGoldenQuarks()
 
@@ -1495,7 +1497,6 @@ const resetUpgrades = (i: number) => {
     updateEffectiveLevelMult() // update before prism rune, fixes c15 bug
 
     let m = 0
-    m += getRune('prism').bonus.crystalLevels
     if (player.upgrades[73] > 0.5 && player.currentChallenge.reincarnation !== 0) {
       m += 10
     }

@@ -114,15 +114,6 @@ export const calculateOfferings = (timeMultUsed = true, logMultOnly = false) => 
 
   const effectivePowerOfTen = Math.pow(10, Math.min(300, totalLog))
 
-  // Update Offering Per Second Statistic (For Plat: is this still needed?)
-  if (timeMultUsed) {
-    if (player.prestigecounter === 0) {
-      player.offeringpersecond = 0
-    } else {
-      player.offeringpersecond = effectivePowerOfTen / player.prestigecounter
-    }
-  }
-
   return Math.max(baseOfferings, effectivePowerOfTen)
 }
 
@@ -178,7 +169,6 @@ export const calculateObtainium = (timeMultUsed = true, logMultOnly = false) => 
 
   // Why is this a thing? If DR = 0 (which is possible), then the calculation below will not catch chal 14 enabled.
   if (player.currentChallenge.ascension === 14) {
-    player.offeringpersecond = 0
     return 0
   }
 
@@ -1017,7 +1007,7 @@ export const calculateOffline = (forceTime = 0, fromTips = false) => {
   const obtainiumGain = calculateResearchAutomaticObtainium(timeAdd)
 
   const resetAdd = {
-    prestige: timeAdd / Math.max(0.01, player.fastestprestige),
+    prestige: (player.prestigeCount > 0) ? timeAdd / Math.max(0.01, player.fastestprestige) : 0,
     offering: Math.floor(timeAdd),
     transcension: (player.transcendCount > 0) ? timeAdd / Math.max(0.01, player.fastesttranscend) : 0,
     reincarnation: (player.reincarnationCount > 0) ? timeAdd / Math.max(0.01, player.fastestreincarnate) : 0,
@@ -2197,7 +2187,7 @@ export const isIARuneUnlocked = () => {
 }
 
 export const isShopTalismanUnlocked = () => {
-  return player.shopUpgrades.shopTalisman > 0 || PCoinUpgradeEffects.INSTANT_UNLOCK_1
+  return Boolean(player.shopUpgrades.shopTalisman > 0 || PCoinUpgradeEffects.INSTANT_UNLOCK_1 > 0)
 }
 
 export const sing6Mult = () => {

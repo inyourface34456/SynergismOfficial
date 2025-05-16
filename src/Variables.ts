@@ -92,14 +92,14 @@ export const Globals: GlobalVariables = {
     1, 5, 4, 5, 5,
     10, 10, 10, 10, 10,
     1, 1, 1, 1, 1,
-    10, 50, 50, 50, 50,
+    10, 15, 15, 15, 15,
     10, 1, 20, 20, 20,
     20, 20, 20, 20, 10,
     20, 20, 20, 20, 1,
     20, 5, 5, 3, 2,
     10, 10, 10, 10, 1,
     10, 10, 20, 25, 25,
-    50, 50, 50, 50, 100,
+    15, 15, 15, 15, 30,
     10, 10, 10, 100, 100,
     25, 25, 25, 1, 5,
     10, 10, 10, 10, 1,
@@ -137,7 +137,6 @@ export const Globals: GlobalVariables = {
   multiplierPower: 2,
   multiplierEffect: new Decimal(1),
   challengeOneLog: 3,
-  freeMultiplierBoost: 0,
   totalMultiplierBoost: 0,
 
   globalCoinMultiplier: new Decimal(1),
@@ -692,7 +691,36 @@ export const Globals: GlobalVariables = {
   redAmbrosiaTimer: 0,
   TIME_PER_AMBROSIA: 30,
   TIME_PER_RED_AMBROSIA: 100000,
-  currentSingChallenge: undefined
+  currentSingChallenge: undefined,
+
+  coinVanityThresholds: [
+    0,
+    3,
+    6,
+    16,
+    100,
+    500,
+    2500,
+    1e4,
+    1e5,
+    1e6,
+    1e7,
+    1e8,
+    1e9,
+    1e12,
+    1e15,
+    1e20,
+    1e24,
+    1e28,
+    1e32,
+    1e40,
+    1e50,
+    1e60,
+    1e70,
+    1e80,
+    1e90,
+    1e100
+  ]
 }
 
 export const blankGlobals = { ...Globals }

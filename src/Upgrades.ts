@@ -49,8 +49,8 @@ const upgradetexts = [
   () => format((G.totalCoinOwned + 1) * Math.min(1e30, Math.pow(1.008, G.totalCoinOwned)), 2),
   () => format((G.totalCoinOwned + 1) * Math.min(1e30, Math.pow(1.008, G.totalCoinOwned)), 2),
   () => Math.min(4, 1 + Math.floor(Decimal.log(player.fifthOwnedCoin + 1, 10))),
-  () => Math.floor(player.multiplierBought / 7),
-  () => Math.floor(player.acceleratorBought / 10),
+  () => format(Math.floor(player.multiplierBought / 7), 0, true),
+  () => format(Math.floor(player.acceleratorBought / 10), 0, true),
   () => format(Decimal.pow(2, Math.min(50, player.secondOwnedCoin / 15)), 2),
   () => format(Decimal.pow(1.02, G.freeAccelerator), 2),
   () => format(Decimal.min(1e4, Decimal.pow(1.01, player.prestigeCount)), 2),
@@ -97,16 +97,16 @@ const upgradetexts = [
   () => null,
   () =>
     format(
-      Math.min(250, Math.floor(Decimal.log(player.coins.add(1), 1e3)))
-        + Math.max(0, Math.min(1750, Math.floor(Decimal.log(player.coins.add(1), 1e15)) - 50))
+      Math.min(50, Math.floor(Decimal.log(player.coins.add(1), 1e10)))
+        + Math.max(0, Math.min(50, Math.floor(Decimal.log(player.coins.add(1), 1e50)) - 10))
     ),
   () =>
     format(
       Math.min(
-        1000,
+        100,
         Math.floor(
           (player.firstOwnedCoin + player.secondOwnedCoin + player.thirdOwnedCoin + player.fourthOwnedCoin
-            + player.fifthOwnedCoin) / 160
+            + player.fifthOwnedCoin) / 400
         )
       )
     ),
@@ -114,16 +114,16 @@ const upgradetexts = [
     format(
       Math.floor(
         Math.min(
-          2000,
+          100,
           (player.firstOwnedCoin + player.secondOwnedCoin + player.thirdOwnedCoin + player.fourthOwnedCoin
-            + player.fifthOwnedCoin) / 80
+            + player.fifthOwnedCoin) / 400
         )
       )
     ),
   () =>
     format(
-      Math.min(75, Math.floor(Decimal.log(player.coins.add(1), 1e10)))
-        + Math.min(925, Math.floor(Decimal.log(player.coins.add(1), 1e30)))
+      Math.min(50, Math.floor(Decimal.log(player.coins.add(1), 1e30)))
+        + Math.min(50, Math.floor(Decimal.log(player.coins.add(1), 1e300)))
     ),
   () => format(Math.floor(G.totalCoinOwned / 2000)),
   () => format(Math.min(500, Math.floor(Decimal.log(player.prestigePoints.add(1), 1e25)))),
@@ -135,7 +135,7 @@ const upgradetexts = [
   () => null,
   () => null,
   () => null,
-  () => format(Decimal.min(1e30, Decimal.pow(player.transcendPoints.add(1), 3 / 2))),
+  () => format(Decimal.min(1e30, Decimal.pow(player.transcendPoints.add(4), 1 / 2))),
   () => format(Decimal.min(1e50, Decimal.pow(player.prestigePoints.add(1), 1 / 50).dividedBy(2.5).add(1)), 2),
   () => format(Decimal.min(1e30, Decimal.pow(1.01, player.transcendCount)), 2),
   () => format(Decimal.min(1e6, Decimal.pow(1.01, player.transcendCount)), 2),
@@ -418,12 +418,11 @@ const returnCrystalUpgEffect = (i: number) =>
 
 export const crystalupgradedescriptions = (i: number) => {
   const p = player.crystalUpgrades[i - 1]
-  const c = (player.upgrades[73] > 0.5 && player.currentChallenge.reincarnation !== 0 ? 10 : 0)
-    + getRune('prism').bonus.crystalLevels
+  const c = player.upgrades[73] > 0.5 && player.currentChallenge.reincarnation !== 0 ? 10 : 0
 
   const q = Decimal.pow(
     10,
-    G.crystalUpgradesCost[i - 1]
+    G.crystalUpgradesCost[i - 1] - getRune('prism').bonus.costDivisorLog10
       + G.crystalUpgradeCostIncrement[i - 1] * Math.floor(Math.pow(player.crystalUpgrades[i - 1] + 0.5 - c, 2) / 2)
   )
   DOMCacheGetOrSet('crystalupgradedescription').textContent = returnCrystalUpgDesc(i)

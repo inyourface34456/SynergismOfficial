@@ -207,7 +207,8 @@ export const challengeDisplay = (i: number, changefocus = true) => {
 
     switch (i) {
       case 1: {
-        current1 = current2 = format(10 * CalcECC('transcend', player.challengecompletions[1]))
+        current1 = format(2 * CalcECC('transcend', player.challengecompletions[1]))
+        current2 = format(0.75 * CalcECC('transcend', player.challengecompletions[1]), 2, true)
         current3 = format(0.04 * CalcECC('transcend', player.challengecompletions[1]), 2, true)
         break
       }
@@ -265,7 +266,7 @@ export const challengeDisplay = (i: number, changefocus = true) => {
       case 11: {
         current1 = format(12 * CalcECC('ascension', player.challengecompletions[11]))
         current2 = format(Decimal.pow(1e5, CalcECC('ascension', player.challengecompletions[11])))
-        current3 = format(80 * CalcECC('ascension', player.challengecompletions[11]))
+        current3 = format(CalcECC('ascension', player.challengecompletions[11]))
         break
       }
       case 12: {
@@ -282,8 +283,8 @@ export const challengeDisplay = (i: number, changefocus = true) => {
       }
       case 14: {
         current1 = format(50 * CalcECC('ascension', player.challengecompletions[14]))
-        current2 = format(1 * player.challengecompletions[14])
-        current3 = format(200 * CalcECC('ascension', player.challengecompletions[14]))
+        current2 = format(CalcECC('ascension', player.challengecompletions[14]))
+        current3 = format(1.5 * CalcECC('ascension', player.challengecompletions[14]))
         break
       }
     }

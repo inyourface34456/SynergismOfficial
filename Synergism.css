@@ -1019,6 +1019,19 @@ p#promocodeinfo {
     font-size: min(1em, 20px);
 }
 
+#coinInformation {
+    text-align: center;
+    margin: 10px;
+    padding: 10px;
+    font-size: 1.2em
+}
+
+#coinVanity {
+    text-align: center;
+    margin: 0px;
+    padding: 0px;
+}
+
 .buttonRow > div {
     display: flex;
     justify-content: flex-start;

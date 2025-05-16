@@ -867,15 +867,15 @@
       "restrictions": "Transcend and reach the goal except Multipliers do nothing but act like Accelerators, which are nerfed by 50%!",
       "goal": "Goal: Gain {{value}} Coins in challenge.",
       "per": {
-        "1": "+10 base Multiplier Boosts! [+0.05 to power!] Current: ",
-        "2": "+10% total Multiplier Boosts! Current: ",
+        "1": "+2 base Multiplier Boosts! [+0.02 to power!] Current: ",
+        "2": "Duplication Rune level scaling coefficient is increased by 0.75! Current: ",
         "3": "+0.04 base Rune exp per Offering! Current: "
       },
       "first": "+1 free Multiplier! +1 Base EXP per offering used!",
       "start": "Start [No Multipliers]",
       "current": {
         "1": "+{{value}} Boosts",
-        "2": "+{{value}}% more Boosts",
+        "2": "+{{value}} Duplication Rune level scaling coefficient",
         "3": "+{{value}} Rune EXP [Highest Completion]"
       }
     },
@@ -1049,14 +1049,14 @@
       "per": {
         "1": "+12 free Ant Levels! Current: ",
         "2": "Ant Speed x(1e5)^completions! Current: ",
-        "3": "+80 to Rune Caps! Current: "
+        "3": "+1 to the Rune Level Coefficient of the first five runes! Current: "
       },
       "first": "Unlock 15 Researches, and unlock the ability to open Tesseracts! Also unlocks the Campaign mode. I wonder what that does?",
       "start": "Start <[(Reduced Ants)]>",
       "current": {
         "1": "+{{value}} free ant levels",
         "2": "Ant Speed x{{value}}",
-        "3": "+{{value}} to Rune Caps"
+        "3": "+{{value}}"
       }
     },
     "12": {
@@ -1103,14 +1103,14 @@
       "per": {
         "1": "+50% stronger effect on researches 1x1 through 1x5. Current: ",
         "2": "+1 research purchased per roomba tick! Current: ",
-        "3": "+200 to Rune Caps! Current: "
+        "3": "+1.5 to the Rune Level Coefficient of the first five runes! Current: "
       },
       "first": "Unlock 15 Researches, and a way to coalesce your power into the Singularity. Unlock Campaigns, and the ability to create your own Corruption builds!",
       "start": "Start <[(No Research)]>",
       "current": {
         "1": "+{{value}}% Power",
         "2": "+{{value}} per Tick",
-        "3": "+{{value}} to Rune Caps"
+        "3": "+{{value}}"
       }
     },
     "15": {
@@ -1257,7 +1257,7 @@
       "13": "[2x3] For each 20 Cubes opened at once, you get 1 additional tribute at random.",
       "14": "[2x4] Iris shines her light on you. The effect power is now increased by +0.01 (+0.005 if >1000 tributes) per level.",
       "15": "[2x5] Ares teaches you the Art of War. The effect power is now increased by +0.02 (+0.0066 if >1000 tributes) per level.",
-      "16": "[2x6] You got it buster! +20 ALL max rune levels per level.",
+      "16": "[2x6] You got it buster! For Speed and Prism runes, add +1 to the Rune Level Coefficient per level!",
       "17": "[2x7] Yep. +5 Exponent per level to crystals.",
       "18": "[2x8] Quantum tunnelling ftw. +20% global game speed.",
       "19": "[2x9] Unlocks new coin upgrades ranging from start of Ascend to post c10 and beyond.",
@@ -1278,7 +1278,7 @@
       "34": "[4x4] Chronos overclocks the universe for your personal benefit. (Rewards the same as others)",
       "35": "[4x5] Aphrodite increases the fertility of your coins. (Rewards the same as others)",
       "36": "[4x6] Raise building power to (1 + 0.05 * Level) once more.",
-      "37": "[4x7] Adds +20 to ALL rune caps again per level.",
+      "37": "[4x7] For Thrift and Superior Intellect runes, add +1 to the Rune Level Coefficient per level!",
       "38": "[4x8] Gain +0.5% more Tesseracts on Ascension for each additional level in a corruption you enable.",
       "39": "[4x9] Instead of the multiplier being 1.03^(C10 completions), it is now 1.035^(C10 completions)!",
       "40": "[4x10] Athena is very smart (Rewards the same as others).",
@@ -1423,10 +1423,10 @@
       "74": "[3x24] Automatically gain completions for Challenge 4 while running a Reincarnation Challenge",
       "75": "[3x25] Automatically gain completions for Challenge 5 while running a Reincarnation Challenge",
       "76": "[4x1] Welcome to the land of expensive researches. Here's +10% Obtainium per level to help you out!",
-      "77": "[4x2] Increase the level cap of Thrift rune by 10 per level, and +2% EXP for that rune in particular.",
-      "78": "[4x3] Increase the level cap of Speed rune by 10 per level, and +2% EXP for that rune in particular.",
-      "79": "[4x4] Increase the level cap of Prism rune by 10 per level, and +2% EXP for that rune in particular.",
-      "80": "[4x5] Increase the level cap of Duplication rune by 10 per level, and +2% EXP for that rune in particular.",
+      "77": "[4x2] If you offer 10x the rune EXP to the Speed rune, you'd get about 150 more levels, on average. Why not increase that by 1 per level?",
+      "78": "[4x3] If you offer 10x the rune EXP to the Duplication rune, you'd get about 150 more levels, on average. Why not increase that by 1 per level?",
+      "79": "[4x4] If you offer 10x the rune EXP to the Prism rune, you'd get about 150 more levels, on average. Why not increase that by 1 per level?",
+      "80": "[4x5] If you offer 10x the rune EXP to the Thrift rune, you'd get about 150 more levels, on average. Why not increase that by 1 per level?",
       "81": "[4x6] You thought the previous researches are expensive? You're going to need this! [+10% Obtainium/level]",
       "82": "[4x7] Permanently UNLOCK the Rune of Superior Intellect! [+%Ob / +Ant Speed / +%Off.]",
       "83": "[4x8] Taking forever to level up that SI Rune? Here's +5% SI Rune EXP per level.",
@@ -1457,12 +1457,12 @@
       "108": "[5x8] A simple trick makes your base Ant ELO increase by 25 per level!",
       "109": "[5x9] A more convoluted trick makes your base Ant ELO increase by 25 per level again!",
       "110": "[5x10] Gain +1% more ELO from Ant sources per level because why not?",
-      "111": "[5x11] Gotta go fast [+10 max Speed Rune Level per level, +1% EXP to that rune]",
-      "112": "[5x12] Double Trouble [+10 max Duplication Rune level per level, +1% EXP to that rune]",
-      "113": "[5x13] Newton's Delight [+10 max Prism Rune Level per level, +1% EXP to that rune]",
-      "114": "[5x14] Five-Finger discounts [+10 max Thrift Rune Level per level, +1% EXP to that rune]",
-      "115": "[5x15] Scientific Breakthrough [+10 max SI Rune Level per level +1% EXP to that rune]",
-      "116": "[5x16] Talismans grant another +0.1% more free Rune Levels per level!",
+      "111": "[5x11] If you offer 10x the rune EXP to the Speed rune, you'd get about 150 more levels, on average. Why not increase that by 1 per level?",
+      "112": "[5x12] If you offer 10x the rune EXP to the Duplication rune, you'd get about 150 more levels, on average. Why not increase that by 1 per level",
+      "113": "[5x13] If you offer 10x the rune EXP to the Prism rune, you'd get about 150 more levels, on average. Why not increase that by 1 per level?",
+      "114": "[5x14] If you offer 10x the rune EXP to the Thrift rune, you'd get about 150 more levels, on average. Why not increase that by 1 per level?",
+      "115": "[5x15] If you offer 10x the rune EXP to the Superior Intellect rune, you'd get about 150 more levels, on average. Why not increase that by 1 per level?",
+      "116": "Talismans grant another +0.1% more free Rune Levels per level!",
       "117": "[5x17] Talismans grant yet ANOTHER +0.1% more free Rune Levels per level!",
       "118": "[5x18] Try this for size: Talismans grant +0.2% more free Rune Levels per level! It's like twice as good as the other upgrades.",
       "119": "[5x19] Gain +0.25% Wow! Cubes per level upon Ascension.",
@@ -2510,10 +2510,10 @@
       "24": "Gain 1 Multiplier and 2 Accelerators plus 1% more free Multipliers/Accelerators.",
       "25": "Gain 1 Multiplier and 1 Accelerators plus 1% more free Multipliers/Accelerators.",
       "26": "Gain a free Accelerator Boost.",
-      "27": "Gain free Accelerators based on unspent Coins.",
-      "28": "Gain a free Multiplier per 160 Coin producers bought.",
-      "29": "Gain a free Accelerator per 80 Coin producers bought.",
-      "30": "Gain free Multipliers based on unspent Coins.",
+      "27": "Gain free levels of Speed Rune based on unspent Coins. (Max: +100)",
+      "28": "Gain a free level of Duplication Rune per 400 Coin producers bought. (Max: +100)",
+      "29": "Gain a free level of Speed Rune per 400 Coin producers bought. (Max: +100)",
+      "30": "Gain free levels of Duplication Rune based on unspent Coins. (Max: +100)",
       "31": "Gain 1 free Accelerator Boost per 2,000 Coin producers bought.",
       "32": "Gain free Accelerators based on Unspent Diamonds.",
       "33": "Gain 1 free Multiplier for each Accelerator Boost owned.",
@@ -2678,10 +2678,10 @@
       "24": "Effect: {{x}} Multipliers, +{{y}} Accelerators.",
       "25": "Effect: {{x}} Multipliers, +{{y}} Accelerators.",
       "26": "Effect: +1 Accelerator Boost.",
-      "27": "Effect: +{{x}} Accelerators.",
-      "28": "Effect: +{{x}} Multipliers.",
-      "29": "Effect: +{{x}} Accelerators.",
-      "30": "Effect: +{{x}} Multipliers.",
+      "27": "Effect: +{{x}} free Speed Rune levels!",
+      "28": "Effect: +{{x}} free Duplication Rune levels!",
+      "29": "Effect: +{{x}} free Speed Rune levels!",
+      "30": "Effect: +{{x}} free Duplication Rune levels!",
       "31": "Effect: +{{x}} Accelerator Boosts",
       "32": "Effect: +{{x}} Accelerators",
       "33": "Effect: +{{x}} Multipliers",
@@ -3241,10 +3241,39 @@
     "shop": "Hover over each portion of the shop to see what each upgrade does!"
   },
   "buildings": {
+    "coinInformation": "You hold <<gold | {{coins}} Coins>> [<<gold | +{{coinsPerSecond}}/s>>] | Total Ever: <<gold | {{totalGenerated}}>>",
+    "coinFlavorTexts": {
+      "1": "You have nothing 100 coins. You can hire a worker, conveniently for exactly 100 coins!",
+      "2": "Your workers sure are working hard. Let's buy some investments with our coins!",
+      "3": "A million coins! Something tells you that being a millionaire here isn't all that impressive.",
+      "4": "You're beyond rich, you're loaded! However, it does not feel... <<cyan | prestigious>> enough.",
+      "5": "Even with your prestige, it does not do your 1 googol coins justice. You must <<orchid | transcend>> your idea of wealth.",
+      "6": "1e500 coins! Weren't you dirt poor just a couple hours ago?",
+      "7": "1e2500 coins! Even the amount of digits in your wealth is becoming noteworthy to you or I. Might I need to <<limegreen | reincarnate>> to regain consciousness?",
+      "8": "I'm starting to believe that no amount of coins are enough. <<limegreen | Reincarnation>> only strengthens your penchant for wealth accumulation.",
+      "9": "Your wealth now has 100,000 digits. Have you even considered how long it would take to write it out? You should ask <a href=\"https://ivark.github.io/AntimatterDimensions\" target=\"_blank\"><<yellow | Hevipelle>></a>.",
+      "10": "Remember when you had just a million coins? Pepperidge farm remembers. <<grey | Your Grandma>> remembers...",
+      "11": "The three digits at the front of your total coins are called a <<orange | mantissa>>. Do they even matter in your case?",
+      "12": "The number of digits in your wealth is the number of atoms in the universe, raised to the power of <<gold | 1,250,000>>...",
+      "13": "You see the ants from down here. However, do you see the ants from <<orange | up there>>?",
+      "14": "If you had a dollar for every digit in your wealth, you would be the richest person on this thing one would call <<lightblue|\"Earth\">>...",
+      "15": "10^1,000,000,000,000,000 Coins! If the exponent were multiplied by 9, in some alternative <<grey | Realities>> you would overflow the universe with coins.",
+      "16": "An exponent so large, many wouldn't know it by name.",
+      "17": "Have you ever questioned why the <<gray | Tax Man>> divides your coins? The ultimate creator of this reality, which you believe to be a <<cyan | Platonic>> (ideal) being, instructed as much.",
+      "18": "Octillions of digits in your wealth! What if there were other <<green | Octagonal>> objects in this reality? That would be silly.",
+      "19": "I still remember ye olde days, when workers were <<gold | 100 Coins>>, do you?",
+      "20": "I think you are long past the point where the <<gray | Tax Man>> is the only thing holding you back. Right?",
+      "21": "Sometimes you wonder if the Ant God is better off just feeding off your Coins. You surely have enough.",
+      "22": "Ant God, Derpsmith, the Gold Guy, <<cyan | Platonic>>... who are all of these entities anyway?",
+      "23": "10 to the <<gold|10,000,000,000,000,000,000>><<orange|,000,000,000,000,000,000>><<brown|,000,000,000,000,000,000>><<<grey|,000,000,000,000,000>>",
+      "24": "They should write stories about your wealth. It only suffices that an <<grey | Ultimate Pen>> will do.",
+      "25": "No one will know my name, but the bards' songs will remain.",
+      "26": "That's a lot of coins lol"
+    },
     "taxWarning": "Your tax also caps your Coin gain at {{gain}}/s.",
     "acceleratorPower": "Acceleration Power: {{power}}% || Acceleration Multiplier: {{mult}}x",
     "multiplierPower": "Multiplier Power: {{power}}x || Multiplier: {{mult}}x",
-    "acceleratorBoost": "Reset Diamonds and Prestige Upgrades, but add {{amount}}% Acceleration Power and 5 free Accelerators.",
+    "acceleratorBoost": "Reset Diamonds and Diamond Upgrades, but add {{amount}}% Acceleration Power and {{accelsPerBoost}} free Accelerators.",
     "coinsPerSecond": "Coins/Sec: {{coins}} [{{percent}}%]",
     "costCoins": "Cost: {{coins}} coins.",
     "costDiamonds": "Cost: {{diamonds}} Diamonds.",
@@ -3572,19 +3601,19 @@
       "name": "Speed Rune",
       "description": "An energy eminates from this stone. You feel compelled to inscribe power into it with your Offerings.",
       "values": "+0.02% Accelerator Power, +0.25% Accelerators per level. Global Speed (affecting resource production, and most reset timers) is multiplied by up to 2!",
-      "effect": "Speed Rune Bonus: +{{val}}% Accelerator Power, +{{val2}}% Accelerators, +{{val3}} Global Speed."
+      "effect": "Speed Rune Bonus: +{{val}}% Accelerator Power, +{{val2}} Accelerators, +{{val3}} Global Speed."
     },
     "duplication": {
       "name": "Duplication Rune",
       "description": "With this many diamonds, surely you live in a post-scarcity world. Let's counterfeit anyway!",
-      "values": "+1 Multiplier Power Boost (+0.02 to Multiplier Power), +0.25% Multipliers per level. Tax growth is delayed more for each level!",
-      "effect": "Duplication Rune Bonus: +{{val}} Multiplier Power Boosts, +{{val2}}% Multipliers, -{{val3}}% Tax Growth."
+      "values": "+0.2 Multiplier Power Boost (each gives +0.02 to Multiplier Power), +0.25% Multipliers per level. Tax growth is delayed more for each level!",
+      "effect": "Duplication Rune Bonus: +{{val}} Multiplier Power Boosts, +{{val2}} Multipliers, -{{val3}}% Tax Growth."
     },
     "prism": {
       "name": "Prism Rune",
       "description": "You're in the high-fidelity first class traveling set.",
-      "values": "~(1 + (Level/2)^2 * 2^(Level/2) / 256)x Crystal Production. +1 free level for each Crystal upgrade per 16 levels!",
-      "effect": "Prism Rune Bonus: All Crystal Producer production multiplied by {{val}}x, gain +{{val2}} free crystal levels."
+      "values": "~(1 + (Level/2)^2 * 2^(Level/2) / 256)x Crystal Production. Every 10 levels, divide the cost of all Crystal Upgrades by 10.",
+      "effect": "Prism Rune Bonus: All Crystal Producer production multiplied by {{val}}x, The costs of all Crystal Upgrades is divided by {{val2}}."
     },
     "thrift": {
       "name": "Thrift Rune",
@@ -3595,8 +3624,8 @@
     "superiorIntellect": {
       "name": "Superior Intellect",
       "description": "Over a hundred times the number of brain cells the average human has, put into one rock. It's probably sentient.",
-      "values": "~(1 + level/200)x Obtainium, (1 + Level^2/2500)x Ant Hatch Speed, (1 + level/2000)x Offerings",
-      "effect": "S. Intellect Rune Bonus: Obtainium gain x{{val}}, Ant Speed: x{{val2}}. Offerings x{{val3}}"
+      "values": "(1 + level/2000)x Offerings, (1 + level/200)x Obtainium, (1 + Level^2/2500)x Ant Hatch Speed",
+      "effect": "S. Intellect Rune Bonus: Offerings x{{val}}, Obtainium x{{val2}}, Ant Speed x{{val3}}"
     },
     "infiniteAscent": {
       "name": "Infinite Ascent",
@@ -3660,44 +3689,44 @@
       "exemption": {
         "name": "The Exemption Talisman",
         "description": "Fake Science Monthly says wearing this trinket lowers your taxes!",
-        "inscription": "Inscription: Your taxes are multiplied by <<gold|{{val}}>>.",
-        "signature": "TO BE IMPLEMENTED! exemption"
+        "inscription": "<<gold | ✏>> Inscription: Your taxes are multiplied by <<gold|{{val}}>>.",
+        "signature": "<<crimson | ✎>> TO BE IMPLEMENTED! exemption"
       },
       "chronos": {
         "name": "Talisman of Chronology",
-        "description": "Time flows just a little faster when wear this.",
-        "inscription": "Inscription: Global Speed is increased by <<gold|{{val}}>>.",
-        "signature": "TO BE IMPLEMENTED! chronos"
+        "description": "<i>Time flows just a little faster when worn</i>, you read on the tag.",
+        "inscription": "<<gold | ✏>> Inscription: Global Speed is increased by <<gold|{{val}}>>.",
+        "signature": "<<crimson | ✎>> TO BE IMPLEMENTED! chronos"
       },
       "midas": {
         "name": "Midas Necklace",
         "description": "If Midas turned all he touched to gold...",
-        "inscription": "Inscription: Rune Blessing bonuses are increased by <<gold|{{val}}>>.",
-        "signature": "TO BE IMPLEMENTED! midas"
+        "inscription": "<<gold | ✏>> Inscription: Rune Blessing bonuses are increased by <<gold|{{val}}>>.",
+        "signature": "<<crimson | ✎>> TO BE IMPLEMENTED! midas"
       },
       "metaphysics": {
         "name": "Metaphysical Gem",
         "description": "Do you wear this, or does this wear you?",
-        "inscription": "Inscription: This Talismans' Bonus Rune Levels are increased by <<gold|{{val}}>>.",
-        "signature": "TO BE IMPLEMENTED! metaphysics"
+        "inscription": "<<gold | ✏>> Inscription: This Talismans' Bonus Rune Levels are increased by <<gold|{{val}}>>.",
+        "signature": "<<crimson | ✎>> TO BE IMPLEMENTED! metaphysics"
       },
       "polymath": {
         "name": "Trinket of the Polymath",
         "description": "Do you feel like an exiled trickster?",
-        "inscription": "Inscription: Ascension Speed is increased by <<gold|{{val}}>>.",
-        "signature": "TO BE IMPLEMENTED! polymath"
+        "inscription": "<<gold | ✏>> Inscription: Ascension Speed is increased by <<gold|{{val}}>>.",
+        "signature": "<<crimson | ✎>> TO BE IMPLEMENTED! polymath"
       },
       "mortuus": {
         "name": "Preserved Ant Talisman",
         "description": "It's said that great sacrifice was made for this Talisman to exist.",
-        "inscription": "Inscription: Ant ELO is increased by <<gold|{{val}}>>.",
-        "signature": "TO BE IMPLEMENTED! mortuus"
+        "inscription": "<<gold | ✏>> Inscription: Ant ELO is increased by <<gold|{{val}}>>.",
+        "signature": "<<crimson | ✎>> TO BE IMPLEMENTED! mortuus"
       },
       "plastic": {
         "name": "A hunk of Plastic",
         "description": "Probably purchased on a buy now, pay later app.",
-        "inscription": "Inscription: Quark Gain is increased by <<gold|{{val}}>>.",
-        "signature": "Signature: None. You cannot seem to sign your name on this hunk of plastic."
+        "inscription": "<<gold | ✏>> Inscription: Quark Gain is increased by <<gold|{{val}}>>.",
+        "signature": "<<crimson | ✎>> Signature: None. You cannot seem to sign your name on this hunk of plastic."
       },
       "wowSquare": {
         "name": "The Wow! Square",
@@ -3809,7 +3838,7 @@
     },
     "level": "Level {{x}}",
     "freeLevels": "[+{{x}}]",
-    "offeringText": "+{{exp}} EXP per Offering - [{{offeringReq}}] Offerings to next level.",
+    "offeringText": "+{{exp}} EXP per Offering - {{offeringReq}} Offerings for +{{levels}}.",
     "maxLevel": "Maxed Level!",
     "TNL": "+1 in {{EXP}} EXP"
   },
@@ -5053,7 +5082,7 @@
     "transferredFromLZ": "Transferred save to new format successfully!",
     "allCorruptionsZero": "All Corruptions have been set to Zero. This will take effect on the next Ascension.",
     "corruptionLoadoutApplied": "Corruption Loadout {{x}} \"{{y}}\" has been applied. This will take effect on the next Ascension.",
-    "ascendPrompt": "Ascending will reset all buildings, rune levels [NOT CAP!], talismans, most researches, and the anthill feature for Cubes of Power. Continue?",
+    "ascendPrompt": "Ascending will reset all buildings, rune EXP, talismans, most researches, and the anthill feature for Cubes of Power. Continue?",
     "reincarnatePrompt": "Reincarnating will reset EVERYTHING but in return you will get extraordinarily powerful Particles, and unlock some very strong upgrades and some new features. would you like to Reincarnate? [Disable this message in settings.]",
     "transcendPrompt": "Transcends will reset coin and prestige upgrades, coin producers, crystal producers AND diamonds. The first Transcension unlocks new features. Would you like to Transcend? [Toggle this message in settings.]",
     "prestigePrompt": "Prestige will reset coin upgrades, coin producers AND crystals. The first Prestige unlocks new features. Would you like to Prestige? [Toggle this message in settings.]",

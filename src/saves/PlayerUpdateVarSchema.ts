@@ -81,6 +81,7 @@ export const playerUpdateVarSchema = playerSchema.transform((player) => {
   Reflect.deleteProperty(player, 'talismanFive')
   Reflect.deleteProperty(player, 'talismanSix')
   Reflect.deleteProperty(player, 'talismanSeven')
+  Reflect.deleteProperty(player, 'offeringpersecond')
 
   return player
 })

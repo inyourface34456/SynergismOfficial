@@ -281,7 +281,6 @@ export interface Player {
 
   runeshards: number
   maxofferings: number
-  offeringpersecond: number
 
   prestigecounter: number
   transcendcounter: number
@@ -695,7 +694,6 @@ export interface GlobalVariables {
   multiplierPower: number
   multiplierEffect: Decimal
   challengeOneLog: number
-  freeMultiplierBoost: number
   totalMultiplierBoost: number
 
   globalCoinMultiplier: Decimal
@@ -951,6 +949,8 @@ export interface GlobalVariables {
   TIME_PER_RED_AMBROSIA: number
 
   currentSingChallenge: keyof Player['singularityChallenges'] | undefined
+
+  coinVanityThresholds: number[]
 }
 
 export interface SynergismEvents {

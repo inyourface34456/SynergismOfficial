@@ -393,7 +393,7 @@ export const playerSchema = z.object({
   runeexp: z.union([z.number(), z.null().transform(() => 0)]).array().optional(),
   runeshards: z.number(),
   maxofferings: z.number().default(() => blankSave.maxofferings),
-  offeringpersecond: z.number().default(() => blankSave.offeringpersecond),
+  offeringpersecond: z.number().optional(),
 
   prestigecounter: z.number(),
   transcendcounter: z.number(),
