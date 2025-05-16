@@ -337,6 +337,10 @@ export const allWowCubeStats: StatLine[] = [
     stat: () => 1 + (2.25 * player.shopUpgrades.seasonPass) / 100
   },
   {
+    i18n: 'WowSquare',
+    stat: () => getTalisman('wowSquare').bonus.oddDimBonus
+  },
+  {
     i18n: 'Researches',
     stat: () =>
       (1 + player.researches[119] / 400) // 5x19
@@ -445,6 +449,10 @@ export const allTesseractStats: StatLine[] = [
     stat: () => 1 + (2.25 * player.shopUpgrades.seasonPass) / 100
   },
   {
+    i18n: 'WowSquare',
+    stat: () => getTalisman('wowSquare').bonus.evenDimBonus
+  },
+  {
     i18n: 'ConstantUpgrade10',
     stat: () => 1 + 0.01 * Decimal.log(player.ascendShards.add(1), 4) * Math.min(1, player.constantUpgrades[10])
   },
@@ -510,6 +518,10 @@ export const allHypercubeStats: StatLine[] = [
     stat: () => 1 + (1.5 * player.shopUpgrades.seasonPass2) / 100
   },
   {
+    i18n: 'WowSquare',
+    stat: () => getTalisman('wowSquare').bonus.oddDimBonus
+  },
+  {
     i18n: 'Achievement212-215',
     stat: () =>
       1 + (4 / 100) * (
@@ -567,6 +579,10 @@ export const allPlatonicCubeStats: StatLine[] = [
     stat: () => 1 + (1.5 * player.shopUpgrades.seasonPass2) / 100
   },
   {
+    i18n: 'WowSquare',
+    stat: () => getTalisman('wowSquare').bonus.evenDimBonus
+  },
+  {
     i18n: 'Achievement196',
     stat: () =>
       1 + Math.min(
@@ -618,6 +634,10 @@ export const allHepteractCubeStats: StatLine[] = [
   {
     i18n: 'SeasonPass3',
     stat: () => 1 + (1.5 * player.shopUpgrades.seasonPass3) / 100
+  },
+  {
+    i18n: 'WowSquare',
+    stat: () => getTalisman('wowSquare').bonus.oddDimBonus
   },
   {
     i18n: 'Achievement258',
@@ -682,6 +702,10 @@ export const allOcteractCubeStats: StatLine[] = [
   {
     i18n: 'SeasonPassLost',
     stat: () => 1 + player.shopUpgrades.seasonPassLost / 1000
+  },
+  {
+    i18n: 'WowSquare',
+    stat: () => getTalisman('wowSquare').bonus.evenDimBonus
   },
   {
     i18n: 'CookieUpgrade20',

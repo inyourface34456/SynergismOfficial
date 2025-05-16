@@ -13,7 +13,7 @@ import { DOMCacheGetOrSet } from './Cache/DOM'
 import { formatAsPercentIncrease } from './Campaign'
 import { CalcECC } from './Challenges'
 import { PCoinUpgradeEffects } from './PseudoCoinUpgrades'
-import { getTalismanBonus } from './Talismans'
+import { getTalisman, getTalismanBonus } from './Talismans'
 import { productContents, sumContents } from './Utility'
 
 export enum resetTiers {
@@ -154,10 +154,6 @@ export class Rune<K extends RuneKeys> {
    * You may derive this result through algebraic manipulation.
    */
   get level (): number {
-    if (player.currentChallenge.reincarnation === 9) {
-      return 0
-    }
-
     return Math.floor(this.effectiveLevelsPerOOM * Decimal.log10(this.runeEXP.div(this.costCoefficient).plus(1)))
   }
 
@@ -168,14 +164,14 @@ export class Rune<K extends RuneKeys> {
   }
 
   get effectiveRuneLevel (): number {
+    if (player.currentChallenge.reincarnation === 9 && resetTiers[this.minimalResetTier] < resetTiers.singularity) {
+      return 1
+    }
+
     return (this.level + this.freeLevels) * this.effectiveLevelMult()
   }
 
   get freeLevels (): number {
-    if (player.currentChallenge.reincarnation === 9) {
-      return 0
-    }
-
     return this._freeLevels()
   }
 
@@ -290,6 +286,11 @@ export class Rune<K extends RuneKeys> {
     DOMCacheGetOrSet('focusedRuneName').textContent = this.name
     DOMCacheGetOrSet('focusedRuneDescription').textContent = this.description
     DOMCacheGetOrSet('focusedRuneValues').textContent = this.valueText
+    DOMCacheGetOrSet('focusedRuneCoefficient').textContent = i18next.t('runes.runeCoefficientText', {
+      x: format(this.levelsPerOOM, 2, true),
+      y: format(this.levelsPerOOMIncrease(), 2, true),
+      z: format(this.effectiveLevelsPerOOM, 2, true)
+    })
     DOMCacheGetOrSet('focusedRuneLevelInfo').textContent = i18next.t('runes.offeringText', {
       exp: format(this.perOfferingEXP, 2, true),
       offeringReq: format(this.computeOfferingsToLevel(this.level + player.offeringbuyamount), 0, true),
@@ -376,7 +377,8 @@ export const speedRuneOOMIncrease = () => {
     player.researches[111],
     CalcECC('ascension', player.challengecompletions[11]),
     1.5 * CalcECC('ascension', player.challengecompletions[14]),
-    player.cubeUpgrades[16]
+    player.cubeUpgrades[16],
+    getTalisman('chronos').bonus.speedOOMBonus
   ])
 }
 
@@ -386,7 +388,8 @@ export const duplicationRuneOOMIncrease = () => {
     player.researches[78],
     player.researches[112],
     CalcECC('ascension', player.challengecompletions[11]),
-    1.5 * CalcECC('ascension', player.challengecompletions[14])
+    1.5 * CalcECC('ascension', player.challengecompletions[14]),
+    getTalisman('exemption').bonus.duplicationOOMBonus
   ])
 }
 
@@ -396,7 +399,8 @@ export const prismRuneOOMIncrease = () => {
     player.researches[113],
     CalcECC('ascension', player.challengecompletions[11]),
     1.5 * CalcECC('ascension', player.challengecompletions[14]),
-    player.cubeUpgrades[16]
+    player.cubeUpgrades[16],
+    getTalisman('mortuus').bonus.prismOOMBonus
   ])
 }
 
@@ -406,7 +410,8 @@ export const thriftRuneOOMIncrease = () => {
     player.researches[114],
     CalcECC('ascension', player.challengecompletions[11]),
     1.5 * CalcECC('ascension', player.challengecompletions[14]),
-    player.cubeUpgrades[37]
+    player.cubeUpgrades[37],
+    getTalisman('midas').bonus.thriftOOMBonus
   ])
 }
 
@@ -415,7 +420,8 @@ export const superiorIntellectOOMIncrease = () => {
     player.researches[115],
     CalcECC('ascension', player.challengecompletions[11]),
     1.5 * CalcECC('ascension', player.challengecompletions[14]),
-    player.cubeUpgrades[37]
+    player.cubeUpgrades[37],
+    getTalisman('polymath').bonus.SIOOMBonus
   ])
 }
 
@@ -613,7 +619,7 @@ export const runeData: { [K in RuneKeys]: RuneData<K> } = {
     rewards: (level) => {
       const costDelay = Math.min(1e15, level / 125)
       const recycleChance = 0.25 * (1 - Math.exp(-Math.sqrt(level) / 100))
-      const taxReduction = 0.01 + 0.99 * Math.exp(-Math.sqrt(Math.max(0, level - 400)) / 100)
+      const taxReduction = 0.01 + 0.99 * Math.exp(-Math.cbrt(level) / 20)
       return {
         desc: i18next.t('runes.thrift.effect', {
           val: format(costDelay, 2, true),

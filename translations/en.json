@@ -3606,7 +3606,7 @@
     "duplication": {
       "name": "Duplication Rune",
       "description": "With this many diamonds, surely you live in a post-scarcity world. Let's counterfeit anyway!",
-      "values": "+0.2 Multiplier Power Boost (each gives +0.02 to Multiplier Power), +0.25% Multipliers per level. Tax growth is delayed more for each level!",
+      "values": "+0.2 Multiplier Power Boost (each gives +0.02 to Multiplier Power), +0.25% Multipliers per level. Tax growth is delayed more for each level (cap: 99.9%)!",
       "effect": "Duplication Rune Bonus: +{{val}} Multiplier Power Boosts, +{{val2}} Multipliers, -{{val3}}% Tax Growth."
     },
     "prism": {
@@ -3618,7 +3618,7 @@
     "thrift": {
       "name": "Thrift Rune",
       "description": "It seems with this rune in tow, you keep making great deals on your purchases, and your Offerings are just a little more reusable.",
-      "values": "+0.125% building cost growth delay per level, +0.0625% Offering recycle chance per level [MAX: 25%], 2^((1000 - Level)/1100) Tax growth multiplier AFTER level 400",
+      "values": "+0.125% building cost growth delay per level, more Offering Recycle chance per level (cap: +25%), Tax Growth is delayed more for each level (cap: 99%)!",
       "effect": "Thrift Rune Bonus: Delay all producer cost increases by {{val}}%, Offering recycle chance: +{{val2}}%. -{{val3}}% Tax Growth"
     },
     "superiorIntellect": {
@@ -3658,9 +3658,9 @@
       "7": "You cannot grasp the true form of Ant God's treasure."
     },
     "talismans": {
-      "fortify": "FORTIFY",
-      "enhance": "ENHANCE",
-      "respec": "RESPEC",
+      "fortify": "x1",
+      "enhance": "To Rarity",
+      "respec": "MAX",
       "respecAll": "RESPEC ALL",
       "respecConfirm": "Confirm [-100,000 Offerings]",
       "respecConfirmAll": "Confirm All [-400,000 Offerings]",
@@ -3690,37 +3690,37 @@
         "name": "The Exemption Talisman",
         "description": "Fake Science Monthly says wearing this trinket lowers your taxes!",
         "inscription": "<<gold | ✏>> Inscription: Your taxes are multiplied by <<gold|{{val}}>>.",
-        "signature": "<<crimson | ✎>> TO BE IMPLEMENTED! exemption"
+        "signature": "<<crimson | ✎>> Signature: Add <<crimson|12>> to the Rune Level Coefficient of the Duplication Rune."
       },
       "chronos": {
         "name": "Talisman of Chronology",
         "description": "<i>Time flows just a little faster when worn</i>, you read on the tag.",
         "inscription": "<<gold | ✏>> Inscription: Global Speed is increased by <<gold|{{val}}>>.",
-        "signature": "<<crimson | ✎>> TO BE IMPLEMENTED! chronos"
+        "signature": "<<crimson | ✎>> Signature: Add <<crimson|12>> to the Rune Level Coefficient of the Speed Rune."
       },
       "midas": {
         "name": "Midas Necklace",
         "description": "If Midas turned all he touched to gold...",
         "inscription": "<<gold | ✏>> Inscription: Rune Blessing bonuses are increased by <<gold|{{val}}>>.",
-        "signature": "<<crimson | ✎>> TO BE IMPLEMENTED! midas"
+        "signature": "<<crimson | ✎>> Signature: Add <<crimson|12>> to the Rune Level Coefficient of Thrift Rune."
       },
       "metaphysics": {
         "name": "Metaphysical Gem",
         "description": "Do you wear this, or does this wear you?",
         "inscription": "<<gold | ✏>> Inscription: This Talismans' Bonus Rune Levels are increased by <<gold|{{val}}>>.",
-        "signature": "<<crimson | ✎>> TO BE IMPLEMENTED! metaphysics"
+        "signature": "<<crimson | ✎>> Signature: This Talismans' Bonus Rune Levels are further increased by <<crimson|7%>>."
       },
       "polymath": {
         "name": "Trinket of the Polymath",
         "description": "Do you feel like an exiled trickster?",
         "inscription": "<<gold | ✏>> Inscription: Ascension Speed is increased by <<gold|{{val}}>>.",
-        "signature": "<<crimson | ✎>> TO BE IMPLEMENTED! polymath"
+        "signature": "<<crimson | ✎>> Signature: Add <<crimson|12>> to the Rune level Coefficient of Superior Intellect Rune."
       },
       "mortuus": {
         "name": "Preserved Ant Talisman",
         "description": "It's said that great sacrifice was made for this Talisman to exist.",
         "inscription": "<<gold | ✏>> Inscription: Ant ELO is increased by <<gold|{{val}}>>.",
-        "signature": "<<crimson | ✎>> TO BE IMPLEMENTED! mortuus"
+        "signature": "<<crimson | ✎>> Signature: Add <<crimson|12>> to the Rune Level Coefficient of Prism Rune."
       },
       "plastic": {
         "name": "A hunk of Plastic",
@@ -3732,7 +3732,7 @@
         "name": "The Wow! Square",
         "description": "For the average :unsmith:, this is a cube.",
         "inscription": "<<gold | ✏>> Inscription: Even-Dimensional Cube Gain is increased by <<gold|{{val}}>>",
-        "signature": "<<crimson | ✎>> Signature: Odd-Dimensional Cube Gain is increased by <<gold|12%>>"
+        "signature": "<<crimson | ✎>> Signature: Odd-Dimensional Cube Gain is increased by <<crimson|12%>>"
       },
       "shards": {
         "shard": "Talisman Shard",
@@ -3818,6 +3818,7 @@
       "buyUpTo": "Buy up to <<var(--orchid-text-color)|{{amount}}>> Levels per purchase, if affordable. [Input to toggle]"
     },
     "perOfferingText": "+{{exp}} EXP per offering, {{x}} [{{y}}] Offerings to level up once.",
+    "runeCoefficientText": "Rune Coefficient: {{x}} [+{{y}}] = {{z}}. If you multiplied this rune's EXP by 10, you would gain roughly this many levels.",
     "runeEffectSummaryTitle": "=====RUNE EFFECT SUMMARY=====",
     "bonusAmount": "[Bonus: {{x}}]",
     "bonusNope": "[Bonus: Nope!]",
@@ -4029,7 +4030,7 @@
       "PseudoCoins": "PseudoCoin Upgrade:",
       "AscensionTime": "Ascension Time Multiplier:",
       "CampaignTutorial": "Campaign - Tutorial Bonus:",
-      "Campaign": "Campaign - Cube Bonus",
+      "Campaign": "Campaign - Cube Bonus:",
       "SunMoon": "Sun & Moon Achievement Multiplier:",
       "SpeedAchievement": "Speed Achievement:",
       "Challenge15": "Challenge 15 - All Cube Bonus I-V:",
@@ -4074,6 +4075,7 @@
       "AscensionScore": "Ascension Score Multiplier:",
       "GlobalCube": "Global Cube Multiplier:",
       "SeasonPass1": "Season Pass 1:",
+      "WowSquare": "Wow Square - Signature Bonus:",
       "Researches": "Researches (Except 8x25):",
       "Research8x25": "Research 8x25:",
       "CubeUpgrades": "Cube Upgrades:",
@@ -4094,6 +4096,7 @@
       "AscensionScore": "Ascension Score Multiplier:",
       "GlobalCube": "Global Cube Multiplier:",
       "SeasonPass1": "Season Pass 1:",
+      "WowSquare": "Wow Square - Inscription Bonus:",
       "ConstantUpgrade10": "Constant Upgrade 10:",
       "CubeUpgrade3x10": "Cube Upgrade 3x10:",
       "CubeUpgrade4x8": "Cube Upgrade 4x8:",
@@ -4110,6 +4113,7 @@
       "AscensionScore": "Ascension Score Multiplier:",
       "GlobalCube": "Global Cube Multiplier:",
       "SeasonPass2": "Season Pass 2:",
+      "WowSquare": "Wow Square - Signature Bonus:",
       "Achievement212-215": "Achievement 212-215 Bonus:",
       "Achievement216": "Achievement 216 Bonus:",
       "Achievement253": "Achievement 253 Bonus:",
@@ -4125,6 +4129,7 @@
       "AscensionScore": "Ascension Score Multiplier:",
       "GlobalCube": "Global Cube Multiplier:",
       "SeasonPass2": "Season Pass 2:",
+      "WowSquare": "Wow Square - Inscription Bonus:",
       "Achievement196": "Achievement 196 Bonus:",
       "Achievement219-222": "Achievement 219-222 Bonus:",
       "Achievement223": "Achievement 223 Bonus:",
@@ -4138,6 +4143,7 @@
       "AscensionScore": "Ascension Score Multiplier:",
       "GlobalCube": "Global Cube Multiplier:",
       "SeasonPass3": "Season Pass 3:",
+      "WowSquare": "Wow Square - Signature Bonus:",
       "Achievement258": "Achievement 258 Bonus:",
       "Achievement264": "Achievement 264 Bonus:",
       "Achievement265": "Achievement 265 Bonus:",
@@ -4154,6 +4160,7 @@
       "SeasonPassY": "Season Pass Y:",
       "SeasonPassZ": "Season Pass Z:",
       "SeasonPassLost": "Season Pass Lost:",
+      "WowSquare": "Wow Square - Inscription Bonus:",
       "CookieUpgrade20": "Cookie Upgrade 20:",
       "DivinePack": "Divine Pack:",
       "SingCubes1": "Cube Flame:",
